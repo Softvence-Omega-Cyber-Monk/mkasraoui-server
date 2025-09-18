@@ -44,10 +44,10 @@ async register(dto: RegisterDto) {
 
   const newUser = await this.prisma.user.create({
     data: {
-      fullName: dto.fullName,
+      name: dto.name,
       email: dto.email,
-      password: hashedPassword,
-      role: dto.role,
+      phone:dto.phone,
+      password: hashedPassword
     },
   });
 
@@ -68,8 +68,8 @@ async register(dto: RegisterDto) {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    if(!user.isActive){
-        throw new BadRequestException('User is blocked!');
+    if(user.isDeleted){
+        throw new BadRequestException('User is Deleted!');
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.password);
@@ -91,8 +91,8 @@ async register(dto: RegisterDto) {
 
       const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
       if (!user) throw new UnauthorizedException('Invalid refresh token');
-      if(!user.isActive){
-       throw new BadRequestException('User is blocked!');
+      if(user.isDeleted){
+       throw new BadRequestException('User is Deleted');
       }
       return getTokens(this.jwtService,user.id, user.email, user.role);
     } catch {
@@ -107,8 +107,8 @@ async register(dto: RegisterDto) {
     if (!user || !user.password) {
       throw new NotFoundException('User not found');
     }
-  if(!user.isActive){
-      throw new BadRequestException('User is blocked!');
+  if(user.isDeleted){
+      throw new BadRequestException('User is Deleted!');
   }
     const isMatch = await bcrypt.compare(dto.oldPassword, user.password);
     if (!isMatch) {
@@ -133,8 +133,8 @@ async register(dto: RegisterDto) {
   async requestResetCode(dto: RequestResetCodeDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) throw new NotFoundException('User not found');
-     if(!user.isActive){
-      throw new BadRequestException('User is blocked!');
+     if(user.isDeleted){
+      throw new BadRequestException('User is Deleted!');
     }
 
 
