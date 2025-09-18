@@ -1,33 +1,41 @@
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+
 
 export class RegisterDto {
   @ApiPropertyOptional({
     example: 'John Doe',
-    description: 'Optional full name of the user',
+    description: 'Optional name of the user',
   })
   @IsOptional()
-  @IsString({ message: 'Full name must be a string' })
-  fullName?: string;
+  @IsString({ message: 'name must be a string' })
+  name?: string;
 
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'shalauddinahmedshipon@gmail.com',
     description: 'User email address',
   })
+
   @IsNotEmpty({ message: 'Email is required!' })
   @IsEmail({}, { message: 'Email must be valid!' })
   email: string;
 
+
+   @ApiProperty({
+    example: '+88019132434',
+    description: 'phone number of the user',
+  })
+  @IsString({ message: 'phone must be a string' })
+  phone: string;
+
   @ApiProperty({
-    example: 'strongPassword123',
+    example: '123456',
     description: 'Password with at least 6 characters',
   })
   @IsNotEmpty({ message: 'Password is required!' })
@@ -36,13 +44,4 @@ export class RegisterDto {
   password: string;
 
 
-  @ApiProperty({
-    example: 'BUYER',
-    enum: ['SELLER', 'BUYER'],
-    description: 'Role selected by user (ADMIN not allowed)',
-  })
-  @IsEnum([ Role.SELLER, Role.BUYER], {
-    message: 'Role must be one of: SELLER,BUYER',
-  })
-  role: Role;
 }
