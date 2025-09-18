@@ -1,0 +1,22 @@
+model Product {
+  id           String     @id @default(uuid())
+  title        String
+  description  String
+  product_type String
+  age_range    String
+  rattings     Float
+  review       String?
+  price        Float
+  included     String[]
+  tutorial     String?
+  imges        String[]
+  activities   Activity[]
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+}
