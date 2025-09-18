@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class RequestResetCodeDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'shalauddinahmedshipon@gmail.com',
     description: 'Registered email address to receive the reset code',
   })
   @IsEmail({}, { message: 'Invalid email address' })
@@ -13,7 +13,7 @@ export class RequestResetCodeDto {
 
 export class VerifyResetCodeDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'shalauddinahmedshipon@gmail.com',
     description: 'Email address used to receive the reset code',
   })
   @IsEmail({}, { message: 'Invalid email address' })
@@ -30,14 +30,14 @@ export class VerifyResetCodeDto {
 
 export class ResetPasswordDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'shalauddinahmedshipon@gmail.com',
     description: 'Email address associated with the account',
   })
   @IsEmail({}, { message: 'Invalid email address' })
   email: string;
 
   @ApiProperty({
-    example: 'newStrongPassword123',
+    example: '123456',
     description: 'New password with at least 6 characters',
   })
   @IsString()
@@ -45,7 +45,7 @@ export class ResetPasswordDto {
   password: string;
 
   @ApiProperty({
-    example: 'newStrongPassword123',
+    example: '123456',
     description: 'Confirm the new password',
   })
   @IsString()

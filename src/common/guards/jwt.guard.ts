@@ -38,7 +38,7 @@ export class JwtGuard extends AuthGuard('jwt') implements CanActivate {
       where: { id: user.id },
     });
 
-    if (!existingUser || !existingUser.isActive) {
+    if (!existingUser || existingUser.isDeleted) {
       throw new ForbiddenException('Your account is deactivated or not found');
     }
 
