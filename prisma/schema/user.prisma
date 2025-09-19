@@ -26,8 +26,8 @@ model ProviderProfile{
    phone   String
    serviceCategory ServiceCategory[]
    serviceArea  String
-   latitude  String
-   longitude  String
+   latitude  Float
+   longitude  Float
    description String
    priceRange  String
    website    String?
