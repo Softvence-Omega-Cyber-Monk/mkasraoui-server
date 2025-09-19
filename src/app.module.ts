@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
 import { UserModule } from './module/user/user.module';
 import { ProductsModule } from './module/products/products.module';
+import { ReviewModule } from './module/review/review.module';
 
 @Module({
   imports: [
@@ -37,7 +38,8 @@ import { ProductsModule } from './module/products/products.module';
     AuthModule,
     ProductsModule,
     MulterModule,
-    UserModule
+    UserModule,
+    ReviewModule
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
