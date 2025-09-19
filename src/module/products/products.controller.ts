@@ -88,13 +88,24 @@ export class ProductsController {
   async createProduct(
     @Body('data') data: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
+    @Res() res: Response,
   ) {
     try {
       const productData: CreateProductDTO = JSON.parse(data);
+
       console.log('Product Data:', productData);
       console.log('Uploaded Files:', files);
 
       return this.productsService.create(productData, files);
+      const createdProduct = await this.productsService.create(productData, files);
+
+      return sendResponse(res, {
+        statusCode: HttpStatus.CREATED,
+        success: true,
+        message: 'Product created successfully',
+        data: createdProduct,
+      });
+
     } catch (err) {
       console.log(err);
       throw err;
@@ -108,19 +119,34 @@ export class ProductsController {
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
       success: true,
-      message: 'Data retrive success',
+      message: 'Data retrieved successfully',
       data: data,
     });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+  @Public() // Assuming this should be public like findAll
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    const data = await this.productsService.findOne(id);
+    return sendResponse(res, {
+      statusCode: HttpStatus.OK,
+      success: true,
+      message: 'Product retrieved successfully',
+      data: data,
+    });
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN)
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        data: { type: 'string', description: 'The product data as a JSON string.' },
+        files: { type: 'array', items: { type: 'string', format: 'binary' } },
+      },
+    },
+  })
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: diskStorage({
@@ -134,14 +160,21 @@ export class ProductsController {
       }),
     }),
   )
-  update(
+  async update(
     @Param('id') id: string,
     @Body('data') data: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
+    @Res() res: Response,
   ) {
     try {
       const updateProductDto: UpdateProductDto = JSON.parse(data);
-      return this.productsService.update(id, updateProductDto, files);
+      const updatedProduct = await this.productsService.update(id, updateProductDto, files);
+      return sendResponse(res, {
+        statusCode: HttpStatus.OK,
+        success: true,
+        message: 'Product updated successfully',
+        data: updatedProduct,
+      });
     } catch (err) {
       console.error(err);
       throw err;
@@ -150,7 +183,13 @@ export class ProductsController {
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(id);
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    await this.productsService.remove(id);
+    return sendResponse(res, {
+      statusCode: HttpStatus.OK,
+      success: true,
+      message: 'Product deleted successfully',
+      data: null,
+    });
   }
 }
