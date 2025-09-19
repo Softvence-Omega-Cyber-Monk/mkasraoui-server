@@ -13,6 +13,8 @@ model User{
   providerProfile ProviderProfile?
   reviews ProductReview[]
   provider_reviews ProviderReview[]
+
+  Quote Quote[]
 }
 
 
@@ -39,6 +41,8 @@ model ProviderProfile{
    avg_ratting Float @default(0)
    total_review Int @default(0)
    reviews ProviderReview[]
+
+   Quote Quote[]
 }
 
 

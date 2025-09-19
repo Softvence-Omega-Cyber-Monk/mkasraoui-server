@@ -1,0 +1,46 @@
+
+model Quote{
+  id String @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+
+  providerId    String
+  provider      ProviderProfile @relation(fields: [providerId], references: [id])
+  name String?
+  email String @unique
+  phone String?
+  date  DateTime
+  time  DateTime
+  numberOfGuest  Int 
+  partyTheme  String?
+  partyType    PartyType
+  partyLocation  String
+  description   String
+  budgetRange   String
+  status       String
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+enum QuoteStatus {
+  PENDING
+  CANCELLED
+  BOOKED
+}
+
+enum PartyType {
+  BIRTHDAY
+  WEDDING
+  ENGAGEMENT
+  ANNIVERSARY
+  BABY_SHOWER
+  GRADUATION
+  HOLIDAY
+  HOUSE_PARTY
+  POOL_PARTY
+  FESTIVAL
+  CORPORATE_EVENT
+  FAREWELL
+}
