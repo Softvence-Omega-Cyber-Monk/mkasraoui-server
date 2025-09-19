@@ -16,7 +16,7 @@ export class UserController {
   // User submits provider request
   @Post('request-provider')
   @Roles(Role.USER)
-  @ApiOperation({ summary: 'Submit a request to become a provider' })
+  @ApiOperation({ summary: 'Submit a request to become a provider     ' })
   @ApiBody({ type: RequestProviderDto })
   @ApiResponse({ status: 200, description: 'Provider request submitted successfully' })
   @ApiResponse({ status: 400, description: 'Invalid request or user not allowed' })
