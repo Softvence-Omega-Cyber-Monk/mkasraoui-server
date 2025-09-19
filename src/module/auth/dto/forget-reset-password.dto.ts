@@ -21,7 +21,7 @@ export class VerifyResetCodeDto {
 
   @ApiProperty({
     example: '1234',
-    description: '4-digit reset code sent to the user\'s email',
+    description: "4-digit reset code sent to the user's email",
   })
   @IsString()
   @Length(4, 4, { message: 'Code must be 4 characters' })

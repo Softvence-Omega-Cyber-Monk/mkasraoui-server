@@ -3,7 +3,10 @@ import { ServiceCategory } from '@prisma/client';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateProviderDto {
-  @ApiPropertyOptional({ description: 'Business name', example: 'Happy Kids Party' })
+  @ApiPropertyOptional({
+    description: 'Business name',
+    example: 'Happy Kids Party',
+  })
   @IsOptional()
   @IsString()
   bussinessName?: string;
@@ -13,7 +16,10 @@ export class UpdateProviderDto {
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional({ description: 'Contact person name', example: 'John Doe' })
+  @ApiPropertyOptional({
+    description: 'Contact person name',
+    example: 'John Doe',
+  })
   @IsOptional()
   @IsString()
   contactName?: string;
@@ -23,12 +29,19 @@ export class UpdateProviderDto {
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ description: 'Service categories', enum: ServiceCategory, isArray: true })
+  @ApiPropertyOptional({
+    description: 'Service categories',
+    enum: ServiceCategory,
+    isArray: true,
+  })
   @IsOptional()
   @IsArray()
   serviceCategory?: ServiceCategory[];
 
-  @ApiPropertyOptional({ description: 'Service area / city', example: 'New York' })
+  @ApiPropertyOptional({
+    description: 'Service area / city',
+    example: 'New York',
+  })
   @IsOptional()
   @IsString()
   serviceArea?: string;
@@ -43,7 +56,10 @@ export class UpdateProviderDto {
   @IsString()
   longitude?: string;
 
-  @ApiPropertyOptional({ description: 'Description', example: 'Premium birthday party services' })
+  @ApiPropertyOptional({
+    description: 'Description',
+    example: 'Premium birthday party services',
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -53,12 +69,18 @@ export class UpdateProviderDto {
   @IsString()
   priceRange?: string;
 
-  @ApiPropertyOptional({ description: 'Website URL', example: 'https://example.com' })
+  @ApiPropertyOptional({
+    description: 'Website URL',
+    example: 'https://example.com',
+  })
   @IsOptional()
   @IsString()
   website?: string;
 
-  @ApiPropertyOptional({ description: 'Instagram profile', example: 'https://instagram.com/happykidsparty' })
+  @ApiPropertyOptional({
+    description: 'Instagram profile',
+    example: 'https://instagram.com/happykidsparty',
+  })
   @IsOptional()
   @IsString()
   instagram?: string;

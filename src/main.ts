@@ -8,7 +8,6 @@ import { setupSwagger } from './swagger/swagger.setup';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { join } from 'path';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
@@ -16,7 +15,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: '*', 
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -37,10 +36,10 @@ async function bootstrap() {
       skipUndefinedProperties: true,
     }),
   );
-  
+
   app.useGlobalFilters(new GlobalExceptionFilter());
 
- setupSwagger(app);
+  setupSwagger(app);
   await app.listen(process.env.PORT ?? 3000);
 }
 
