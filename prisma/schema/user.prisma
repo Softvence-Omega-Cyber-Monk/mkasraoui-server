@@ -1,17 +1,73 @@
 
 model User{
   id String @id @default(uuid())
-  fullName String?
+  name String?
   email String @unique
+  phone String?
   password String
-  isActive Boolean @default(true)
-  role     Role @default(BUYER)
+  isDeleted Boolean @default(false)
+  role     Role @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  providerProfile ProviderProfile?
+  reviews ProductReview[]
+  provider_reviews ProviderReview[]
 }
+
+
+model ProviderProfile{
+   id String @id @default(uuid())
+   userId  String  @unique
+   user User @relation(fields: [userId],references: [id])
+   bussinessName  String
+   email  String
+   contactName  String
+   phone   String
+   serviceCategory ServiceCategory[]
+   serviceArea  String
+   latitude  Float
+   longitude  Float
+   description String
+   priceRange  String
+   website    String?
+   instagram  String?
+   portfolioImages  String[]
+   isApproved   Boolean @default(false)
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+   avg_ratting Float @default(0)
+   total_review Int @default(0)
+   reviews ProviderReview[]
+}
+
+
+
+enum ServiceCategory {
+  VENUE_SPACES
+  FOOD_CATERING
+  CAKES_DESSERTS
+  BALLOON_DECOR
+  FLORAL_DECOR
+  LIGHTING_SETUP
+  DJs_BANDS
+  MAGICIANS
+  PHOTOGRAPHY
+  VIDEOGRAPHY
+  PHOTO_BOOTH
+  PARTY_SUPPLIES
+  SOUND_SYSTEM
+  INVITATIONS
+  RETURN_GIFTS
+  HOSTS_ANCHORS
+  KIDS_ENTERTAINMENT
+  PREMIUM_LUXURY
+}
+
+
 
 enum Role {
   ADMIN
-  SELLER
-  BUYER
+  PROVIDER
+  USER
 }
