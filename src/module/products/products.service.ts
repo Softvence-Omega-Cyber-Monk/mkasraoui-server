@@ -76,45 +76,6 @@ export class ProductsService {
     //   },
     //   include: { activities: true },
     // });
-  async update(id: string, updateProductDto: UpdateProductDto, images?: Express.Multer.File[]) {
-    try {
-      const { activities, ...productData } = updateProductDto;
-      const imagePaths = images?.map((file) => buildFileUrl(file.filename));
-
-      return this.prisma.$transaction(async (prisma) => {
-        if (activities) {
-          await prisma.activity.deleteMany({
-            where: { productId: id },
-          });
-        }
-
-        const updatedProduct = await prisma.product.update({
-          where: { id },
-          data: {
-            ...productData,
-            ...(imagePaths ? { imges: imagePaths } : {}),
-          },
-        });
-
-        if (activities && activities.length > 0) {
-          await prisma.activity.createMany({
-            data: activities.map((a) => ({
-              title: a.title,
-              description: a.description,
-              productId: updatedProduct.id,
-            })),
-          });
-        }
-
-        return prisma.product.findUnique({
-          where: { id },
-          include: { activities: true },
-        });
-      });
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
   }
 
   async remove(id: string) {
