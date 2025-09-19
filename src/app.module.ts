@@ -39,6 +39,7 @@ import { ProviderReviewModule } from './module/provider-review/provider-review.m
     ProductsModule,
     MulterModule,
     UserModule,
+
     ReviewModule,
     ProviderReviewModule
   ],
