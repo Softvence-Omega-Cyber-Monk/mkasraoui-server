@@ -16,7 +16,13 @@ import { ProductsService } from './products.service';
 import { CreateProductDTO } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { Public } from 'src/common/decorators/public.decorators';
@@ -38,7 +44,8 @@ export class ProductsController {
       properties: {
         data: {
           type: 'string',
-          description: 'The product data as a JSON string, including activities.',
+          description:
+            'The product data as a JSON string, including activities.',
           example: JSON.stringify({
             title: 'Building Blocks',
             description: 'A set of colorful blocks...',
@@ -60,13 +67,18 @@ export class ProductsController {
       },
     },
   })
-  @ApiResponse({ status: 201, description: 'The product and its activities have been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description:
+      'The product and its activities have been successfully created.',
+  })
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
         },
@@ -80,6 +92,11 @@ export class ProductsController {
   ) {
     try {
       const productData: CreateProductDTO = JSON.parse(data);
+
+      console.log('Product Data:', productData);
+      console.log('Uploaded Files:', files);
+
+      return this.productsService.create(productData, files);
       const createdProduct = await this.productsService.create(productData, files);
 
       return sendResponse(res, {
@@ -88,6 +105,7 @@ export class ProductsController {
         message: 'Product created successfully',
         data: createdProduct,
       });
+
     } catch (err) {
       console.log(err);
       throw err;
@@ -134,7 +152,8 @@ export class ProductsController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
         },

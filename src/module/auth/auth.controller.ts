@@ -1,4 +1,12 @@
-import { Body, Controller, HttpStatus, Patch, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Patch,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -17,7 +25,7 @@ import { refreshTokenDto } from './dto/refresh-token.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-// register 
+  // register
   @Public()
   @Post('register')
   async register(@Body() dto: RegisterDto, @Res() res: Response) {
@@ -30,8 +38,7 @@ export class AuthController {
     });
   }
 
-
-  // login 
+  // login
   @Public()
   @Post('login')
   async login(@Body() dto: LoginDto, @Res() res: Response) {
@@ -44,7 +51,7 @@ export class AuthController {
     });
   }
 
-  // refresh token 
+  // refresh token
   @Public()
   @Post('refresh-token')
   async refreshToken(@Body() dto: refreshTokenDto, @Res() res: Response) {
@@ -57,11 +64,13 @@ export class AuthController {
     });
   }
 
-
-  
-  // change password 
+  // change password
   @Patch('change-password')
-  async changePassword(@Body() dto: ChangePasswordDto, @Req() req: Request, @Res() res: Response) {
+  async changePassword(
+    @Body() dto: ChangePasswordDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const result = await this.authService.changePassword(req.user!.email, dto);
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
@@ -71,11 +80,13 @@ export class AuthController {
     });
   }
 
-
-  // forget and reset password 
+  // forget and reset password
   @Public()
   @Post('request-reset-code')
-  async requestResetCode(@Body() dto: RequestResetCodeDto, @Res() res: Response) {
+  async requestResetCode(
+    @Body() dto: RequestResetCodeDto,
+    @Res() res: Response,
+  ) {
     const result = await this.authService.requestResetCode(dto);
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
@@ -108,8 +119,4 @@ export class AuthController {
       data: result,
     });
   }
-
-
-
-
 }

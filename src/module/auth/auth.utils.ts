@@ -12,29 +12,32 @@ export async function getTokens(
   role: string,
 ) {
   const [access_token, refresh_token] = await Promise.all([
-    jwtService.signAsync({ id: userId, email, role }, {
-      secret: process.env.ACCESS_TOKEN_SECRET,
-      expiresIn: process.env.ACCESS_TOKEN_EXPIREIN,
-    }),
-    jwtService.signAsync({ id: userId, email, role }, {
-      secret: process.env.REFRESH_TOKEN_SECRET,
-      expiresIn: process.env.REFRESH_TOKEN_EXPIREIN,
-    }),
+    jwtService.signAsync(
+      { id: userId, email, role },
+      {
+        secret: process.env.ACCESS_TOKEN_SECRET,
+        expiresIn: process.env.ACCESS_TOKEN_EXPIREIN,
+      },
+    ),
+    jwtService.signAsync(
+      { id: userId, email, role },
+      {
+        secret: process.env.REFRESH_TOKEN_SECRET,
+        expiresIn: process.env.REFRESH_TOKEN_EXPIREIN,
+      },
+    ),
   ]);
 
   return { access_token, refresh_token };
 }
 
-
 export function generateOtpCode() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-
 export async function hashOtpCode(code: string) {
   return bcrypt.hash(code, parseInt(process.env.SALT_ROUND!));
 }
-
 
 export async function verifyOtp(
   prisma: PrismaClient,
