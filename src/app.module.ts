@@ -11,6 +11,7 @@ import { SeederService } from './seeder/seeder.service';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
+import { UserModule } from './module/user/user.module';
 import { ProductsModule } from './module/products/products.module';
 
 @Module({
@@ -35,7 +36,8 @@ import { ProductsModule } from './module/products/products.module';
     PrismaModule,
     AuthModule,
     ProductsModule,
-    MulterModule
+    MulterModule,
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
