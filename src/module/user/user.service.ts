@@ -6,6 +6,7 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RequestProviderDto } from './dto/request-provider.dto';
 import { Role, ServiceCategory } from '@prisma/client';
+import { UpdateProviderDto } from './dto/update-provider.dto';
 
 @Injectable()
 export class UserService {
@@ -18,7 +19,10 @@ export class UserService {
     if (!user) throw new NotFoundException('User not found');
     if(user.role!==Role.USER) throw new BadRequestException('Only user can be requested to become an Provider');
     if (user.isDeleted) throw new BadRequestException('User is deleted');
-
+   const isExistRequest = await this.prisma.providerProfile.findUnique({
+    where:{userId}
+   })
+   if(isExistRequest) throw new BadRequestException("You Already sent provider request")
     const result = await this.prisma.providerProfile.create({
       data: {
         userId,
@@ -81,14 +85,38 @@ export class UserService {
     return result
   }
 
-  // Get all providers(admin only)
-// Get all providers with optional isApproved filter
+
+// Get all providers with optional isApproved filter (admin only)
 async getAllProviders(isApproved?: boolean) {
   const providers = await this.prisma.providerProfile.findMany({
     where: isApproved !== undefined ? { isApproved } : {},
     orderBy: { createdAt: 'desc' },
+    include:{user:true}
   });
   return providers;
 }
+
+
+
+// Update provider profile
+async updateProviderProfile(userId: string, dto: UpdateProviderDto) {
+  // Find provider profile
+  const profile = await this.prisma.providerProfile.findUnique({
+    where: { userId },
+  });
+  if (!profile) throw new NotFoundException('Provider profile not found');
+  if (!profile.isApproved) throw new BadRequestException('Cannot update unapproved profile');
+
+  // Update profile
+  const updated = await this.prisma.providerProfile.update({
+    where: { userId },
+    data: { ...dto },
+  });
+
+  return updated;
+}
+
+
+
 
 }

@@ -6,6 +6,7 @@ import { Request } from 'express';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import { UpdateProviderDto } from './dto/update-provider.dto';
 
 @ApiTags('Providers')
 @Controller('user')
@@ -86,4 +87,23 @@ export class UserController {
       data: result,
     });
   }
+
+
+
+@Post('provider/update-profile')
+@Roles(Role.PROVIDER)
+@ApiOperation({ summary: 'Update your provider profile' })
+@ApiBody({ type: UpdateProviderDto })
+@ApiResponse({ status: 200, description: 'Provider profile updated successfully' })
+@ApiResponse({ status: 404, description: 'Provider profile not found' })
+@ApiResponse({ status: 400, description: 'Cannot update unapproved profile' })
+async updateProviderProfile(@Req() req: Request, @Body() dto: UpdateProviderDto, @Res() res: any) {
+  const result = await this.userService.updateProviderProfile(req.user!.id, dto);
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Provider profile updated successfully',
+    data: result,
+  });
+}
 }
