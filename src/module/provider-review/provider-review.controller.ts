@@ -18,7 +18,6 @@ import { UpdateProviderReviewDto } from './dto/update-provider-review.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import sendResponse from 'src/module/utils/sendResponse';
 import { AuthGuard } from '@nestjs/passport';
-
 import { Public } from 'src/common/decorators/public.decorators';
 
 @ApiTags('Provider Review')
@@ -36,7 +35,9 @@ export class ProviderReviewController {
     @Res() res: Response,
     @Req() req:any
   ) {
+
     const userId=req.user.id
+
     const data = await this.providerReviewService.create(createProviderReviewDto, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.CREATED,
@@ -79,10 +80,13 @@ export class ProviderReviewController {
   async update(
     @Param('id') id: string,
     @Body() updateProviderReviewDto: UpdateProviderReviewDto,
+
     @Res() res: Response,
     @Req() req:any
   ) {
+
     const userId=req.user.id
+     
     const data = await this.providerReviewService.update(id, updateProviderReviewDto, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.OK,

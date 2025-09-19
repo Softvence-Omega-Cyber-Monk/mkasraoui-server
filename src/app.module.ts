@@ -42,8 +42,6 @@ import { ProviderReviewModule } from './module/provider-review/provider-review.m
 
     ReviewModule,
     ProviderReviewModule
-   
-
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
