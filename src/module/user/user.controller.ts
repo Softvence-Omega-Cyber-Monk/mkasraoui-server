@@ -112,7 +112,6 @@ export class UserController {
 
   // Admin only: List all providers
   @Get('providers')
-  @Roles(Role.ADMIN)
   @ApiOperation({
     summary: 'Get all providers with optional filter by approval status',
   })
