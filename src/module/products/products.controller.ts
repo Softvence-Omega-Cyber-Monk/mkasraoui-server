@@ -182,7 +182,7 @@ export class ProductsController {
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
       success: true,
-      message: 'Product deleted successfully',
+      message: 'Product deleted successfully.',
       data: null,
     });
   }
