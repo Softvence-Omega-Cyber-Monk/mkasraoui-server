@@ -6,6 +6,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaService } from './prisma/prisma.service';
 import { setupSwagger } from './swagger/swagger.setup';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { join } from 'path';
 
 
 async function bootstrap() {
@@ -36,7 +37,7 @@ async function bootstrap() {
       skipUndefinedProperties: true,
     }),
   );
-
+  
   app.useGlobalFilters(new GlobalExceptionFilter());
 
  setupSwagger(app);
