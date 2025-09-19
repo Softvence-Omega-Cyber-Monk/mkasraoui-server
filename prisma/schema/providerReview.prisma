@@ -1,0 +1,12 @@
+model ProviderReview {
+    id String @id @default(uuid())
+    rating Float
+    description String
+    productId String
+    userId String
+    user User @relation(fields: [userId],references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    providerId String
+    provider  ProviderProfile @relation(fields: [productId],references: [id])
+}

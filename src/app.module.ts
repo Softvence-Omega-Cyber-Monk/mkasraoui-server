@@ -13,6 +13,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { UserModule } from './module/user/user.module';
 import { ProductsModule } from './module/products/products.module';
 import { ReviewModule } from './module/review/review.module';
+import { ProviderReviewModule } from './module/provider-review/provider-review.module';
 
 @Module({
   imports: [
@@ -38,7 +39,11 @@ import { ReviewModule } from './module/review/review.module';
     ProductsModule,
     MulterModule,
     UserModule,
-    ReviewModule
+
+    ReviewModule,
+    ProviderReviewModule
+   
+
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],

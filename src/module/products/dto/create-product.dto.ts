@@ -57,7 +57,6 @@ export class CreateProductDTO {
   })
   @IsString()
   age_range: string;
-
   @ApiProperty({ description: 'The price of the product.', example: 25.99 })
   @IsNumber()
   price: number;
