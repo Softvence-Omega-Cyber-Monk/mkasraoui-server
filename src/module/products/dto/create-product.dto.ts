@@ -58,19 +58,6 @@ export class CreateProductDTO {
   @IsString()
   age_range: string;
 
-  @ApiProperty({ description: 'The average user rating.', example: 4.5 })
-  @IsNumber()
-  rattings: number;
-
-  @ApiProperty({
-    description: 'An optional review for the product.',
-    required: false,
-    example: 'Highly recommend this product!',
-  })
-  @IsString()
-  @IsOptional()
-  review?: string;
-
   @ApiProperty({ description: 'The price of the product.', example: 25.99 })
   @IsNumber()
   price: number;
