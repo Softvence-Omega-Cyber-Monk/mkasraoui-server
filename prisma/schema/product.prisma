@@ -4,13 +4,16 @@ model Product {
   description  String
   product_type String
   age_range    String
-  rattings     Float
-  review       String?
   price        Float
   included     String[]
   tutorial     String?
   imges        String[]
   activities   Activity[]
+  avg_rating Float @default(0)
+  reviews ProductReview[]
+  total_review Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Activity {
