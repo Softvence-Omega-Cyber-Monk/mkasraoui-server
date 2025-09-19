@@ -6,12 +6,13 @@ import { AuthModule } from './module/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { SeederService } from './seeder/seeder.service';
-import { ProductsModule } from './main/products/products.module';
+
 
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
 import { UserModule } from './module/user/user.module';
+import { ProductsModule } from './module/products/products.module';
 
 @Module({
   imports: [
