@@ -8,10 +8,10 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
-  ParseFilePipe,
-  MaxFileSizeValidator,
-  FileTypeValidator,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ProductsService } from './products.service';
 import { CreateProductDTO } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -22,6 +22,7 @@ import { extname } from 'path';
 import { Public } from 'src/common/decorators/public.decorators';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import sendResponse from 'src/module/utils/sendResponse';
 
 @ApiTags('Products')
 @Controller('products')
@@ -29,7 +30,6 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @Public()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new product with activities and images.' })
   @ApiBody({
@@ -90,8 +90,15 @@ export class ProductsController {
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  @Public()
+  async findAll(@Res() res: Response) {
+    const data=await this.productsService.findAll();
+     return sendResponse(res, {
+      statusCode: HttpStatus.OK,
+      success: true,
+      message: 'Data retrive success',
+      data: data,
+    });
   }
 
   @Get(':id')
@@ -100,7 +107,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN) // Example of role-based access control
+  @Roles(Role.ADMIN)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FilesInterceptor('files', 10, {
