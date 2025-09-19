@@ -17,8 +17,12 @@ import {
   VerifyResetCodeDto,
 } from './dto/forget-reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { generateOtpCode, getTokens, hashOtpCode, verifyOtp } from './auth.utils';
-
+import {
+  generateOtpCode,
+  getTokens,
+  hashOtpCode,
+  verifyOtp,
+} from './auth.utils';
 
 @Injectable()
 export class AuthService {
@@ -28,47 +32,51 @@ export class AuthService {
     private mailerService: MailerService,
   ) {}
 
+  // register
+  async register(dto: RegisterDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-// register 
-async register(dto: RegisterDto) {
-  const existingUser = await this.prisma.user.findUnique({
-    where: { email: dto.email },
-  });
+    if (existingUser) {
+      throw new BadRequestException('Email is already registered!');
+    }
 
-  if (existingUser) {
-    throw new BadRequestException('Email is already registered!');
+    const hashedPassword = await bcrypt.hash(
+      dto.password,
+      parseInt(process.env.SALT_ROUND!),
+    );
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone,
+        password: hashedPassword,
+      },
+    });
+
+    const tokens = await getTokens(
+      this.jwtService,
+      newUser.id,
+      newUser.email,
+      newUser.role,
+    );
+    return { user: newUser, ...tokens };
   }
 
-  const hashedPassword = await bcrypt.hash(dto.password, parseInt(process.env.SALT_ROUND!));
-
-  const newUser = await this.prisma.user.create({
-    data: {
-      name: dto.name,
-      email: dto.email,
-      phone:dto.phone,
-      password: hashedPassword
-    },
-  });
-
- 
-
-  const tokens = await getTokens(this.jwtService,newUser.id, newUser.email, newUser.role);
-  return { user: newUser, ...tokens };
-}
-
-
-
-
-// login 
+  // login
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
     if (!user || !user.password) {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    if(user.isDeleted){
-        throw new BadRequestException('User is Deleted!');
+    if (user.isDeleted) {
+      throw new BadRequestException('User is Deleted!');
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.password);
@@ -76,39 +84,44 @@ async register(dto: RegisterDto) {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    const tokens = await getTokens(this.jwtService,user.id, user.email, user.role);
+    const tokens = await getTokens(
+      this.jwtService,
+      user.id,
+      user.email,
+      user.role,
+    );
     return { user, ...tokens };
   }
 
-
-// refresh token 
+  // refresh token
   async refreshTokens(token: string) {
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.REFRESH_TOKEN_SECRET,
       });
 
-      const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
+      const user = await this.prisma.user.findUnique({
+        where: { email: payload.email },
+      });
       if (!user) throw new UnauthorizedException('Invalid refresh token');
-      if(user.isDeleted){
-       throw new BadRequestException('User is Deleted');
+      if (user.isDeleted) {
+        throw new BadRequestException('User is Deleted');
       }
-      return getTokens(this.jwtService,user.id, user.email, user.role);
+      return getTokens(this.jwtService, user.id, user.email, user.role);
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
-
-// change password 
+  // change password
   async changePassword(email: string, dto: ChangePasswordDto) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || !user.password) {
       throw new NotFoundException('User not found');
     }
-  if(user.isDeleted){
+    if (user.isDeleted) {
       throw new BadRequestException('User is Deleted!');
-  }
+    }
     const isMatch = await bcrypt.compare(dto.oldPassword, user.password);
     if (!isMatch) {
       throw new BadRequestException('Old password is incorrect');
@@ -118,7 +131,10 @@ async register(dto: RegisterDto) {
       throw new BadRequestException("Passwords don't match");
     }
 
-    const hashed = await bcrypt.hash(dto.newPassword, parseInt(process.env.SALT_ROUND!) );
+    const hashed = await bcrypt.hash(
+      dto.newPassword,
+      parseInt(process.env.SALT_ROUND!),
+    );
     await this.prisma.user.update({
       where: { email },
       data: { password: hashed },
@@ -127,15 +143,15 @@ async register(dto: RegisterDto) {
     return { message: 'Password changed successfully' };
   }
 
-
-// forget and reset password 
+  // forget and reset password
   async requestResetCode(dto: RequestResetCodeDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (!user) throw new NotFoundException('User not found');
-     if(user.isDeleted){
+    if (user.isDeleted) {
       throw new BadRequestException('User is Deleted!');
     }
-
 
     const code = generateOtpCode();
     const hashedCode = await hashOtpCode(code);
@@ -155,7 +171,7 @@ async register(dto: RegisterDto) {
   }
 
   async verifyResetCode(dto: VerifyResetCodeDto) {
-    return verifyOtp(this.prisma,dto.email, dto.code);
+    return verifyOtp(this.prisma, dto.email, dto.code);
   }
 
   async resetPassword(dto: ResetPasswordDto) {
@@ -172,7 +188,10 @@ async register(dto: RegisterDto) {
       throw new BadRequestException('OTP not verified');
     }
 
-    const hashed = await bcrypt.hash(dto.password, parseInt(process.env.SALT_ROUND!));
+    const hashed = await bcrypt.hash(
+      dto.password,
+      parseInt(process.env.SALT_ROUND!),
+    );
     await this.prisma.user.update({
       where: { email: dto.email },
       data: { password: hashed },
@@ -182,6 +201,4 @@ async register(dto: RegisterDto) {
 
     return { message: 'Password reset successful' };
   }
-
- 
 }

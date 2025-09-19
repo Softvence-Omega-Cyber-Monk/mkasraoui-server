@@ -7,7 +7,6 @@ import { ConfigModule } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { SeederService } from './seeder/seeder.service';
 
-
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
@@ -37,10 +36,9 @@ import { ProductsModule } from './module/products/products.module';
     AuthModule,
     ProductsModule,
     MulterModule,
-    UserModule
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
 })
-
 export class AppModule {}

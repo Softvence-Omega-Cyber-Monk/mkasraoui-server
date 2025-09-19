@@ -1,14 +1,26 @@
-import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ServiceCategory } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RequestProviderDto {
-  @ApiProperty({ description: 'Name of the business', example: 'Happy Kids Party' })
+  @ApiProperty({
+    description: 'Name of the business',
+    example: 'Happy Kids Party',
+  })
   @IsNotEmpty()
   @IsString()
   bussinessName: string;
 
-  @ApiProperty({ description: 'Business contact email', example: 'contact@example.com' })
+  @ApiProperty({
+    description: 'Business contact email',
+    example: 'contact@example.com',
+  })
   @IsNotEmpty()
   @IsEmail()
   email: string;
@@ -23,7 +35,11 @@ export class RequestProviderDto {
   @IsString()
   phone: string;
 
-  @ApiProperty({ description: 'Array of service categories offered', enum: ServiceCategory, isArray: true })
+  @ApiProperty({
+    description: 'Array of service categories offered',
+    enum: ServiceCategory,
+    isArray: true,
+  })
   @IsArray()
   serviceCategory: ServiceCategory[];
 
@@ -32,35 +48,60 @@ export class RequestProviderDto {
   @IsString()
   serviceArea: string;
 
-  @ApiProperty({ description: 'Latitude of the service location', example: '40.7128' })
+  @ApiProperty({
+    description: 'Latitude of the service location',
+    example: '40.7128',
+  })
   @IsNotEmpty()
   @IsString()
   latitude: string;
 
-  @ApiProperty({ description: 'Longitude of the service location', example: '-74.0060' })
+  @ApiProperty({
+    description: 'Longitude of the service location',
+    example: '-74.0060',
+  })
   @IsNotEmpty()
   @IsString()
   longitude: string;
 
-  @ApiProperty({ description: 'Brief description about the provider', example: 'We provide premium birthday party services.' })
+  @ApiProperty({
+    description: 'Brief description about the provider',
+    example: 'We provide premium birthday party services.',
+  })
   @IsString()
   description: string;
 
-  @ApiProperty({ description: 'Price range for the services', example: '$200 - $1000' })
+  @ApiProperty({
+    description: 'Price range for the services',
+    example: '$200 - $1000',
+  })
   @IsString()
   priceRange: string;
 
-  @ApiProperty({ description: 'Website URL', example: 'https://example.com', required: false })
+  @ApiProperty({
+    description: 'Website URL',
+    example: 'https://example.com',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   website?: string;
 
-  @ApiProperty({ description: 'Instagram profile link', example: 'https://instagram.com/happykidsparty', required: false })
+  @ApiProperty({
+    description: 'Instagram profile link',
+    example: 'https://instagram.com/happykidsparty',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   instagram?: string;
 
-  @ApiProperty({ description: 'Portfolio images URLs', example: ['https://example.com/image1.jpg'], required: false, type: [String] })
+  @ApiProperty({
+    description: 'Portfolio images URLs',
+    example: ['https://example.com/image1.jpg'],
+    required: false,
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   portfolioImages?: string[];

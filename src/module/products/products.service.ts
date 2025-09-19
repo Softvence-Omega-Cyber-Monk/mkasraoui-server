@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDTO } from './dto/create-product.dto';
@@ -10,35 +9,39 @@ import { buildFileUrl } from 'src/helper/urlBuilder';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createProductDto: CreateProductDTO, imges: Express.Multer.File[]) {
-   try{
-     const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];
-    
-    const res=await this.prisma.product.create({
-      data: {
-        title: createProductDto.title,
-        description: createProductDto.description,
-        product_type: createProductDto.product_type,
-        age_range: createProductDto.age_range,
-        rattings: createProductDto.rattings,
-        review: createProductDto.review,
-        price: createProductDto.price,
-        included: createProductDto.included,
-        tutorial: createProductDto.tutorial,
-        imges: imagePaths, 
-        activities: {
-          create: createProductDto.activities.map((a) => ({
-            title: a.title,
-            description: a.description,
-          })),
+  async create(
+    createProductDto: CreateProductDTO,
+    imges: Express.Multer.File[],
+  ) {
+    try {
+      const imagePaths =
+        imges?.map((file) => buildFileUrl(file.filename)) || [];
+
+      const res = await this.prisma.product.create({
+        data: {
+          title: createProductDto.title,
+          description: createProductDto.description,
+          product_type: createProductDto.product_type,
+          age_range: createProductDto.age_range,
+          rattings: createProductDto.rattings,
+          review: createProductDto.review,
+          price: createProductDto.price,
+          included: createProductDto.included,
+          tutorial: createProductDto.tutorial,
+          imges: imagePaths,
+          activities: {
+            create: createProductDto.activities.map((a) => ({
+              title: a.title,
+              description: a.description,
+            })),
+          },
         },
-      },
-      include: { activities: true },
-    });
-    return res
-   }catch(err){
-    console.log(err)
-   }
+        include: { activities: true },
+      });
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async findAll() {
@@ -58,7 +61,11 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto, imges?: Express.Multer.File[]) {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    imges?: Express.Multer.File[],
+  ) {
     const imagePaths = imges?.map((file) => file.filename);
     // const { activities, imges: _, ...productData } = updateProductDto;
 
@@ -69,7 +76,7 @@ export class ProductsService {
     //     ...(imagePaths ? { imges: imagePaths } : {}),
     //     activities: activities
     //       ? {
-    //           deleteMany: { productId: id }, 
+    //           deleteMany: { productId: id },
     //           create: activities.map((a) => ({
     //             title: a.title,
     //             description: a.description,

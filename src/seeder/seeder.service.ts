@@ -18,10 +18,10 @@ export class SeederService implements OnApplicationBootstrap {
     const adminPassword = process.env.ADMIN_PASSWORD as string;
 
     const supperAdmin = await this.prisma.user.findFirst({
-      where: { role: Role.ADMIN},
+      where: { role: Role.ADMIN },
     });
 
-    if ( supperAdmin) {
+    if (supperAdmin) {
       this.logger.log('Admin is already exists, skipping seeding.');
       return;
     }
