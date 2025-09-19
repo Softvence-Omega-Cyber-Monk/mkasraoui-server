@@ -9,6 +9,7 @@ import {
   HttpStatus,
   UseGuards,
   Res,
+  Req,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ProviderReviewService } from './provider-review.service';
@@ -17,7 +18,6 @@ import { UpdateProviderReviewDto } from './dto/update-provider-review.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import sendResponse from 'src/module/utils/sendResponse';
 import { AuthGuard } from '@nestjs/passport';
-import { User as UserDecorator } from 'src/common/decorators/user.decorator';
 import { Public } from 'src/common/decorators/public.decorators';
 
 @ApiTags('Provider Review')
@@ -32,9 +32,10 @@ export class ProviderReviewController {
   @ApiResponse({ status: 201, description: 'Review created successfully.' })
   async create(
     @Body() createProviderReviewDto: CreateProviderReviewDto,
-    @UserDecorator('id') userId: string,
     @Res() res: Response,
+    @Req() req:any
   ) {
+    const userId = req.user.id;
     const data = await this.providerReviewService.create(createProviderReviewDto, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.CREATED,
@@ -77,9 +78,10 @@ export class ProviderReviewController {
   async update(
     @Param('id') id: string,
     @Body() updateProviderReviewDto: UpdateProviderReviewDto,
-    @UserDecorator('id') userId: string,
+   @Req() req: any,
     @Res() res: Response,
   ) {
+     const userId = req.user.id;
     const data = await this.providerReviewService.update(id, updateProviderReviewDto, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
@@ -95,9 +97,10 @@ export class ProviderReviewController {
   @ApiOperation({ summary: 'Delete a provider review by its ID.' })
   async remove(
     @Param('id') id: string,
-    @UserDecorator('id') userId: string,
+    @Req() req:any,
     @Res() res: Response,
   ) {
+     const userId = req.user.id;
     await this.providerReviewService.remove(id, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.OK,

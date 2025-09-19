@@ -8,29 +8,7 @@ import { buildFileUrl } from 'src/helper/urlBuilder';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-
-  async create(
-    createProductDto: CreateProductDTO,
-    imges: Express.Multer.File[],
-  ) {
-    try {
-      const imagePaths =
-        imges?.map((file) => buildFileUrl(file.filename)) || [];
-
-      const res = await this.prisma.product.create({
-        data: {
-          title: createProductDto.title,
-          description: createProductDto.description,
-          product_type: createProductDto.product_type,
-          age_range: createProductDto.age_range,
-          rattings: createProductDto.rattings,
-          review: createProductDto.review,
-          price: createProductDto.price,
-          included: createProductDto.included,
-          tutorial: createProductDto.tutorial,
-          imges: imagePaths,
-
- async create(createProductDto: CreateProductDTO, imges: Express.Multer.File[]) {
+  async create(createProductDto: CreateProductDTO, imges: Express.Multer.File[]) {
     try {
       const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];
 
@@ -53,12 +31,11 @@ export class ProductsService {
     } catch (err) {
       console.log(err);
       throw err;
-
     }
   }
 
   async findAll() {
-    return this.prisma.product.findMany({ include: { reviews:true } });
+    return this.prisma.product.findMany({ include: { reviews: true } });
   }
 
   async findOne(id: string) {
@@ -74,32 +51,6 @@ export class ProductsService {
     return product;
   }
 
-
-  async update(
-    id: string,
-    updateProductDto: UpdateProductDto,
-    imges?: Express.Multer.File[],
-  ) {
-    const imagePaths = imges?.map((file) => file.filename);
-    // const { activities, imges: _, ...productData } = updateProductDto;
-
-    // return this.prisma.product.update({
-    //   where: { id },
-    //   data: {
-    //     ...productData,
-    //     ...(imagePaths ? { imges: imagePaths } : {}),
-    //     activities: activities
-    //       ? {
-    //           deleteMany: { productId: id },
-    //           create: activities.map((a) => ({
-    //             title: a.title,
-    //             description: a.description,
-    //           })),
-    //         }
-    //       : undefined,
-    //   },
-    //   include: { activities: true },
-    // });
   async update(id: string, updateProductDto: UpdateProductDto, images?: Express.Multer.File[]) {
     try {
       const { activities, ...productData } = updateProductDto;
