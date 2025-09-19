@@ -109,7 +109,7 @@ async requestProvider(
     const providers = await this.prisma.providerProfile.findMany({
       where: isApproved !== undefined ? { isApproved } : {},
       orderBy: { createdAt: 'desc' },
-      include: { user: true },
+      include: { user: true,reviews:true },
     });
     return providers;
   }
