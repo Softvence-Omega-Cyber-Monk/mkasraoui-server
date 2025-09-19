@@ -30,6 +30,7 @@ import { UpdateProviderDto } from './dto/update-provider.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { Public } from 'src/common/decorators/public.decorators';
 
 @ApiTags('User')
 @Controller('user')
@@ -112,7 +113,7 @@ export class UserController {
 
   // Admin only: List all providers
   @Get('providers')
-  @Roles(Role.ADMIN)
+  @Public()
   @ApiOperation({
     summary: 'Get all providers with optional filter by approval status',
   })

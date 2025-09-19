@@ -29,12 +29,4 @@ export class CreateProviderReviewDto {
   })
   providerId: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  @ApiProperty({
-    description: 'The ID of the product being reviewed.',
-    example: 'b2c3d4e5-f6g7-8901-2345-678901bcdefg',
-  })
-  productId: string;
 }
