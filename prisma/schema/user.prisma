@@ -12,6 +12,7 @@ model User{
 
   providerProfile ProviderProfile?
   reviews ProductReview[]
+  provider_reviews ProviderReview[]
 }
 
 
@@ -35,6 +36,9 @@ model ProviderProfile{
    isApproved   Boolean @default(false)
    createdAt DateTime @default(now())
    updatedAt DateTime @updatedAt
+   avg_ratting Float @default(0)
+   total_review Int @default(0)
+   reviews ProviderReview[]
 }
 
 
