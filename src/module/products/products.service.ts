@@ -7,7 +7,6 @@ import { buildFileUrl } from 'src/helper/urlBuilder';
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
-
   async create(createProductDto: CreateProductDTO, imges: Express.Multer.File[]) {
     try {
       const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];

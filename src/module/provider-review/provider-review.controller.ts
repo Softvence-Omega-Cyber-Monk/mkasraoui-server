@@ -35,7 +35,9 @@ export class ProviderReviewController {
     @Res() res: Response,
     @Req() req:any
   ) {
-    const userId = req.user.id;
+
+    const userId=req.user.id
+
     const data = await this.providerReviewService.create(createProviderReviewDto, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.CREATED,
@@ -78,10 +80,13 @@ export class ProviderReviewController {
   async update(
     @Param('id') id: string,
     @Body() updateProviderReviewDto: UpdateProviderReviewDto,
-   @Req() req: any,
+
     @Res() res: Response,
+    @Req() req:any
   ) {
-     const userId = req.user.id;
+
+    const userId=req.user.id
+     
     const data = await this.providerReviewService.update(id, updateProviderReviewDto, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
@@ -97,10 +102,10 @@ export class ProviderReviewController {
   @ApiOperation({ summary: 'Delete a provider review by its ID.' })
   async remove(
     @Param('id') id: string,
-    @Req() req:any,
     @Res() res: Response,
+    @Req() req:any
   ) {
-     const userId = req.user.id;
+    const userId=req.user.id
     await this.providerReviewService.remove(id, userId);
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
