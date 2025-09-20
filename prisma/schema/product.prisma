@@ -23,7 +23,3 @@ model Activity {
   productId   String
   product     Product  @relation(fields: [productId], references: [id])
 }
-
-enum Product_Type {
-  SUPERHERO
-}
