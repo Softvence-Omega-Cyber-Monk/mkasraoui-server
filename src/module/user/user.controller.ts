@@ -17,7 +17,7 @@ import { UserService } from './user.service';
 import sendResponse from '../utils/sendResponse';
 import { Request } from 'express';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role, ServiceCategory } from '@prisma/client';
 import {
   ApiOperation,
   ApiQuery,
@@ -26,10 +26,10 @@ import {
   ApiBody,
   ApiConsumes,
 } from '@nestjs/swagger';
-import { UpdateProviderDto } from './dto/update-provider.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { Public } from 'src/common/decorators/public.decorators';
 
 @ApiTags('User')
 @Controller('user')
@@ -110,33 +110,28 @@ export class UserController {
     });
 }
 
-  // Admin only: List all providers
-  @Get('providers')
-  @Roles(Role.ADMIN)
-  @ApiOperation({
-    summary: 'Get all providers with optional filter by approval status',
-  })
-  @ApiQuery({
-    name: 'isApproved',
-    required: false,
-    description: 'Filter providers by approval status (true or false)',
-    type: Boolean,
-  })
-  @ApiResponse({ status: 200, description: 'Providers fetched successfully' })
-  @ApiResponse({ status: 403, description: 'Access denied' })
-  async getAllProviders(
-    @Query('isApproved') isApproved: string,
-    @Res() res: any,
-  ) {
-    const filter = isApproved !== undefined ? isApproved === 'true' : undefined;
-    const result = await this.userService.getAllProviders(filter);
-    return sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: 'Providers fetched successfully',
-      data: result,
-    });
-  }
+
+
+@Get('providers')
+@Public()
+@ApiOperation({ summary: 'Get all providers with search, filter & pagination' })
+@ApiQuery({ name: 'isApproved', required: false, type: Boolean })
+@ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+@ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+@ApiQuery({ name: 'search', required: false, type: String, description: 'Search by business name or service area' })
+@ApiQuery({ name: 'serviceCategory', required: false, enum: ServiceCategory})
+@ApiQuery({ name: 'serviceArea', required: false, type: String })
+@ApiQuery({ name: 'priceRange', required: false, type: String })
+@ApiResponse({ status: 200, description: 'Providers fetched successfully' })
+async getAllProviders(@Query() query: any, @Res() res: any) {
+  const result = await this.userService.getAllProviders(query);
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Providers fetched successfully',
+    data: result,
+  });
+}
 
   // Admin only: Approve a provider request
   @Patch('provider-requests/:id/approve')

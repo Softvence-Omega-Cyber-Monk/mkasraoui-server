@@ -25,7 +25,6 @@ export class ProviderReviewService {
           rating: createProviderReviewDto.rating,
           description: createProviderReviewDto.description,
           providerId: createProviderReviewDto.providerId,
-          productId: createProviderReviewDto.productId,
           userId: userId,
         },
       });

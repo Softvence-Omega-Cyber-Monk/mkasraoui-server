@@ -9,6 +9,7 @@ import { Role, ServiceCategory } from '@prisma/client';
 import { buildFileUrl } from 'src/helper/urlBuilder';
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class UserService {
@@ -104,69 +105,64 @@ async requestProvider(
     return result;
   }
 
-  // Get all providers with optional isApproved filter (admin only)
-  async getAllProviders(isApproved?: boolean) {
-    const providers = await this.prisma.providerProfile.findMany({
-      where: isApproved !== undefined ? { isApproved } : {},
+  // Get all providers with optional isApproved filter 
+  // async getAllProviders(isApproved?: boolean) {
+  //   const providers = await this.prisma.providerProfile.findMany({
+  //     where: isApproved !== undefined ? { isApproved } : {},
+  //     orderBy: { createdAt: 'desc' },
+  //     include: { user: true,reviews:true },
+  //   });
+  //   return providers;
+  // }
+  async getAllProviders(query: any) {
+  const {
+    isApproved,
+    page = 1,
+    limit = 10,
+    search,
+    serviceCategory,
+    serviceArea,
+    priceRange,
+  } = query;
+
+  const where: any = {
+    ...(isApproved !== undefined && { isApproved: isApproved === 'true' }),
+    ...(serviceCategory && { serviceCategory: { has: serviceCategory } }),
+    ...(serviceArea && { serviceArea: { contains: serviceArea, mode: 'insensitive' } }),
+    ...(priceRange && { priceRange: { equals: priceRange } }),
+     ...(search && {
+    OR: [
+      { bussinessName: { contains: search, mode: 'insensitive' } },
+      { serviceArea: { contains: search, mode: 'insensitive' } },
+      {description:{contains:search,mode:'insensitive'}}
+    ],
+  }),
+  };
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const [providers, total] = await this.prisma.$transaction([
+    this.prisma.providerProfile.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
-      include: { user: true },
-    });
-    return providers;
-  }
+      skip,
+      take: Number(limit),
+      include: { user: true, reviews: true },
+    }),
+    this.prisma.providerProfile.count({ where }),
+  ]);
 
-// async updateProviderProfile(
-//   userId: string,
-//   dto: any, // updated provider fields
-//   files: Express.Multer.File[],
-// ) {
-//   const profile = await this.prisma.providerProfile.findUnique({
-//     where: { userId },
-//   });
+  return {
+    data: providers,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / Number(limit)),
+    },
+  };
+}
 
-//   if (!profile) throw new NotFoundException('Provider profile not found');
-//   if (!profile.isApproved)
-//     throw new BadRequestException('Cannot update unapproved profile');
-
-//   // 1️⃣ Remove images specified in dto.removeImages
-//   let updatedImages = profile.portfolioImages || [];
-//   if (dto.removeImages && Array.isArray(dto.removeImages)) {
-//     for (const url of dto.removeImages) {
-//       const filePath = join(__dirname, '../../uploads', url.split('/').pop()!);
-//       if (existsSync(filePath)) unlinkSync(filePath); // delete file from server
-//       updatedImages = updatedImages.filter((img) => img !== url); // remove from array
-//     }
-//   }
-
-//   // 2️⃣ Add new uploaded files
-//   if (files && files.length > 0) {
-//     const newImagePaths = files.map((file) => buildFileUrl(file.filename));
-//     updatedImages = [...updatedImages, ...newImagePaths];
-//   }
-
-//   // 3️⃣ Validate service categories if provided
-//   let serviceCategories = profile.serviceCategory;
-//   if (dto.serviceCategory) {
-//     serviceCategories = dto.serviceCategory.map((c: string) => {
-//       const key = c.trim() as keyof typeof ServiceCategory;
-//       if (!(key in ServiceCategory)) {
-//         throw new BadRequestException(`Invalid service category: ${c}`);
-//       }
-//       return ServiceCategory[key];
-//     });
-//   }
-
-//   // 4️⃣ Update provider profile in database
-//   const updatedProfile = await this.prisma.providerProfile.update({
-//     where: { userId },
-//     data: {
-//       ...dto,
-//       serviceCategory: serviceCategories,
-//       portfolioImages: updatedImages,
-//     },
-//   });
-
-//   return updatedProfile;
-// }
 
 async updateProviderProfile(
   userId: string,

@@ -92,11 +92,6 @@ export class ProductsController {
   ) {
     try {
       const productData: CreateProductDTO = JSON.parse(data);
-
-      console.log('Product Data:', productData);
-      console.log('Uploaded Files:', files);
-
-      return this.productsService.create(productData, files);
       const createdProduct = await this.productsService.create(productData, files);
 
       return sendResponse(res, {
@@ -105,7 +100,6 @@ export class ProductsController {
         message: 'Product created successfully',
         data: createdProduct,
       });
-
     } catch (err) {
       console.log(err);
       throw err;
@@ -188,7 +182,7 @@ export class ProductsController {
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
       success: true,
-      message: 'Product deleted successfully',
+      message: 'Product deleted successfully.',
       data: null,
     });
   }

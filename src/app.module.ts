@@ -14,6 +14,9 @@ import { UserModule } from './module/user/user.module';
 import { ProductsModule } from './module/products/products.module';
 import { ReviewModule } from './module/review/review.module';
 import { ProviderReviewModule } from './module/provider-review/provider-review.module';
+import { QuoteModule } from './module/quote/quote.module';
+import { MailModule } from './module/mail/mail.module';
+import { InvitationsModule } from './module/invitations/invitations.module';
 
 @Module({
   imports: [
@@ -41,9 +44,10 @@ import { ProviderReviewModule } from './module/provider-review/provider-review.m
     UserModule,
 
     ReviewModule,
-    ProviderReviewModule
-    ReviewModule
-
+    ProviderReviewModule,
+    QuoteModule,
+    MailModule,
+    InvitationsModule
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
