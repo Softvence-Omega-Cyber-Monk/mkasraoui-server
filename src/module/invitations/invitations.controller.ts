@@ -114,7 +114,7 @@ export class InvitationsController {
     });
   }
 
-  @Get(':id')
+  @Get('user')
   async findOne(@Param('id') id: string, @Res() res: Response) {
     const invitation = await this.invitationsService.findOne(id);
 
