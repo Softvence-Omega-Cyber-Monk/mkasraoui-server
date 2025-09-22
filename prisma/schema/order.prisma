@@ -1,22 +1,35 @@
 model Order {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  quantity    Int
-  totalAmount Float
-  status      OrderStatus @default(PENDING)
-  paymentId   String?   // Stripe PaymentIntent or Checkout Session ID
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  total     Float
+  paymentIntentId  String?        // Stripe payment ID
+  status    OrderStatus @default(PENDING)
+  
+  // Additional info
+  shippingAddress String?          // Address for delivery
+  contactName     String?          // Name to receive delivery
+  contactPhone    String?          // Phone for delivery
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
 
 enum OrderStatus {
   PENDING
   PAID
-  FAILED
   CANCELLED
+  FAILED
   DELIVERED
 }
