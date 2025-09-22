@@ -14,6 +14,8 @@ model Product {
   total_review Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Order Order[]
 }
 
 model Activity {

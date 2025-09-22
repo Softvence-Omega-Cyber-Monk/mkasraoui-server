@@ -9,12 +9,14 @@ model User{
   role     Role @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  address   String?
   providerProfile ProviderProfile?
   reviews ProductReview[]
   provider_reviews ProviderReview[]
   invitation Invitation[]
   Quote Quote[]
+
+  Order Order[]
 }
 
 
