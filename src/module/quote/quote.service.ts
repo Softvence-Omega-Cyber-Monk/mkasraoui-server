@@ -32,7 +32,6 @@ export class QuoteService {
         time: new Date(dto.time),
         numberOfGuest: dto.numberOfGuest,
         partyTheme: dto.partyTheme,
-        partyType: dto.partyType,
         partyLocation: dto.partyLocation,
         description: dto.description,
         budgetRange: dto.budgetRange,
