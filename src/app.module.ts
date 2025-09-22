@@ -20,6 +20,7 @@ import { InvitationsModule } from './module/invitations/invitations.module';
 import { OrderModule } from './module/order/order.module';
 // import { PaymentModule } from './module/payment/payment.module';
 import { FavoriteModule } from './module/favorite/favorite.module';
+import { BlogModule } from './module/blog/blog.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { FavoriteModule } from './module/favorite/favorite.module';
     InvitationsModule,
     OrderModule,
     FavoriteModule,
+    BlogModule,
     // PaymentModule
   ],
   controllers: [AppController],

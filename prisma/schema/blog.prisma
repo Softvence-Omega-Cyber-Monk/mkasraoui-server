@@ -1,0 +1,11 @@
+model Blog {
+    id String @id @default(uuid())
+    title String
+    description String
+    conclusion String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    images String[]
+    user_id String
+    user User @relation(fields: [user_id],references: [id])
+}
