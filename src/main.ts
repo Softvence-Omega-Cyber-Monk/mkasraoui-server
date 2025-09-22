@@ -6,7 +6,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaService } from './prisma/prisma.service';
 import { setupSwagger } from './swagger/swagger.setup';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-import { join } from 'path';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,7 +15,10 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: '*',
+   origin: [
+    'http://localhost:5173',  
+    'https://checkout.stripe.com', // Stripe checkout
+  ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
