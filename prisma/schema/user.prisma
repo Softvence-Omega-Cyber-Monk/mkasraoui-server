@@ -19,8 +19,9 @@ model User{
   provider_reviews ProviderReview[]
   invitation Invitation[]
   Quote Quote[]
-
+  favorite Favorite[]
   Order Order[]
+  blog Blog[]
 }
 
 
