@@ -16,6 +16,8 @@ model Product {
   updatedAt DateTime @updatedAt
 
   Order Order[]
+
+  CartItem CartItem[]
 }
 
 model Activity {
