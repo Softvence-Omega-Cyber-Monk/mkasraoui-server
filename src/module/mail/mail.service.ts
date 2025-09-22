@@ -22,7 +22,7 @@ export class MailService {
     subject: string;
     html: string;
     from?: string;
-    attachments?: nodemailer.Attachment[]; // This makes attachments optional
+    attachments?: nodemailer.Attachment[];
   }) {
     const { to, subject, html, from, attachments } = options;
 

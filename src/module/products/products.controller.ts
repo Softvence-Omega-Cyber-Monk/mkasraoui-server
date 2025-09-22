@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   Res,
   HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ProductsService } from './products.service';
@@ -35,7 +36,7 @@ import sendResponse from 'src/module/utils/sendResponse';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Post()
+    @Post()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new product with activities and images.' })
   @ApiBody({
@@ -50,10 +51,13 @@ export class ProductsController {
             title: 'Building Blocks',
             description: 'A set of colorful blocks...',
             product_type: 'Toy',
-            included: ['50 pieces', 'manual'],
+            age_range: '3-6 years',
+            price: 25.99,
+            included: ['50 pieces', 'instruction manual'],
+            tutorial: null,
             activities: [
-              { title: 'Build a Tower', description: 'Use the blocks...' },
-              { title: 'Build a Bridge', description: 'Create a bridge...' },
+              { title: 'Build a Tower', description: 'Use the blocks to build a tall tower.' },
+              { title: 'Build a Bridge', description: 'Create a stable bridge using blocks.' },
             ],
           }),
         },
@@ -63,14 +67,23 @@ export class ProductsController {
             type: 'string',
             format: 'binary',
           },
+          description: 'The image files for the product.',
         },
       },
+      required: ['data', 'files'],
     },
   })
   @ApiResponse({
     status: 201,
-    description:
-      'The product and its activities have been successfully created.',
+    description: 'The product and its activities have been successfully created.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data or file upload error.',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'An unexpected error occurred.',
   })
   @UseInterceptors(
     FilesInterceptor('files', 10, {
@@ -88,24 +101,31 @@ export class ProductsController {
   async createProduct(
     @Body('data') data: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Res() res: Response,
   ) {
+    if (!files || files.length === 0) {
+      throw new HttpException('No files uploaded', HttpStatus.BAD_REQUEST);
+    }
+    
     try {
       const productData: CreateProductDTO = JSON.parse(data);
       const createdProduct = await this.productsService.create(productData, files);
-
-      return sendResponse(res, {
+      return {
         statusCode: HttpStatus.CREATED,
         success: true,
         message: 'Product created successfully',
         data: createdProduct,
-      });
+      };
     } catch (err) {
-      console.log(err);
-      throw err;
+      console.error('Error creating product:', err);
+      if (err instanceof SyntaxError) {
+        throw new HttpException('Invalid JSON data', HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException(
+        'Failed to create product',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
-
   @Get()
   @Public()
   async findAll(@Res() res: Response) {

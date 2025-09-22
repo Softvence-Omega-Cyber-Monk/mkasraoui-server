@@ -9,6 +9,10 @@ model User{
   role     Role @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  parties_planed Float @default(0)
+  invitation_send Int @default(0)
+  confirm_inviation Int @default(0)
+  confirmation_token String?
   address   String?
   providerProfile ProviderProfile?
   reviews ProductReview[]
