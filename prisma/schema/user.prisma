@@ -13,11 +13,14 @@ model User{
   invitation_send Int @default(0)
   confirm_inviation Int @default(0)
   confirmation_token String?
+  address   String?
   providerProfile ProviderProfile?
   reviews ProductReview[]
   provider_reviews ProviderReview[]
   invitation Invitation[]
   Quote Quote[]
+
+  Order Order[]
 }
 
 

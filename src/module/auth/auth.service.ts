@@ -52,6 +52,7 @@ export class AuthService {
         name: dto.name,
         email: dto.email,
         phone: dto.phone,
+        address:dto.address,
         password: hashedPassword,
       },
     });

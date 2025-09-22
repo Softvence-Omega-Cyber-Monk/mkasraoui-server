@@ -31,6 +31,14 @@ export class RegisterDto {
   @IsString({ message: 'phone must be a string' })
   phone: string;
 
+
+  @ApiProperty({
+    example: 'Dhaka,Bangladesh',
+    description: 'address of the user',
+  })
+  @IsString({ message: 'phone must be a string' })
+  address: string;
+
   @ApiProperty({
     example: '123456',
     description: 'Password with at least 6 characters',
