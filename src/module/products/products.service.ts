@@ -7,6 +7,8 @@ import { buildFileUrl } from 'src/helper/urlBuilder';
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
+  
+  // create product
   async create(createProductDto: CreateProductDTO, imges: Express.Multer.File[]) {
     try {
       const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];
@@ -50,6 +52,7 @@ export class ProductsService {
     return product;
   }
 
+  // Update product
   async update(id: string, updateProductDto: UpdateProductDto, images?: Express.Multer.File[]) {
     try {
       const { activities, ...productData } = updateProductDto;
@@ -91,7 +94,12 @@ export class ProductsService {
     }
   }
 
+  // Delete product
   async remove(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
     return this.prisma.$transaction(async (prisma) => {
       await prisma.activity.deleteMany({ where: { productId: id } });
       return prisma.product.delete({ where: { id } });

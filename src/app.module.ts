@@ -21,6 +21,7 @@ import { OrderModule } from './module/order/order.module';
 // import { PaymentModule } from './module/payment/payment.module';
 import { FavoriteModule } from './module/favorite/favorite.module';
 import { BlogModule } from './module/blog/blog.module';
+import { NewsLetterModule } from './module/news-letter/news-letter.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { BlogModule } from './module/blog/blog.module';
     OrderModule,
     FavoriteModule,
     BlogModule,
+    NewsLetterModule,
     // PaymentModule
   ],
   controllers: [AppController],
