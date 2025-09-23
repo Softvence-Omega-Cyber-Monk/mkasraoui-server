@@ -36,6 +36,8 @@ import sendResponse from 'src/module/utils/sendResponse';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  // Post product
+  
     @Post()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new product with activities and images.' })
@@ -126,30 +128,53 @@ export class ProductsController {
       );
     }
   }
+
+  // Get all product
   @Get()
   @Public()
   async findAll(@Res() res: Response) {
-    const data = await this.productsService.findAll();
+    try{
+      const data = await this.productsService.findAll();
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
       success: true,
       message: 'Data retrieved successfully',
       data: data,
     });
+    }catch(err){
+      return sendResponse(res, {
+        statusCode: HttpStatus.BAD_REQUEST,
+        success: false,
+        message: 'Failed to retrieve data',
+        data: null,
+      })
+    }
   }
 
+
+  // Get product by Id
   @Get(':id')
-  @Public() // Assuming this should be public like findAll
+  @Public()
   async findOne(@Param('id') id: string, @Res() res: Response) {
-    const data = await this.productsService.findOne(id);
-    return sendResponse(res, {
-      statusCode: HttpStatus.OK,
-      success: true,
-      message: 'Product retrieved successfully',
-      data: data,
-    });
+    try {
+      const data = await this.productsService.findOne(id);
+      return sendResponse(res, {
+        statusCode: HttpStatus.OK,
+        success: true,
+        message: 'Data retrieved successfully',
+        data: data,
+      });
+    } catch (err) {
+      return sendResponse(res, {
+        statusCode: HttpStatus.BAD_REQUEST,
+        success: false,
+        message: 'Failed to retrieve data',
+        data: null,
+      });
+    }
   }
 
+  //UPDATE PROduct route
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -174,6 +199,7 @@ export class ProductsController {
       }),
     }),
   )
+  
   async update(
     @Param('id') id: string,
     @Body('data') data: string,
@@ -190,20 +216,34 @@ export class ProductsController {
         data: updatedProduct,
       });
     } catch (err) {
-      console.error(err);
-      throw err;
+     return sendResponse(res, {
+        statusCode: HttpStatus.BAD_REQUEST,
+        success: false,
+        message: 'Failed to update product',
+        data: null,
+      });
     }
   }
 
+  // Delete Products route
   @Delete(':id')
   @Roles(Role.ADMIN)
   async remove(@Param('id') id: string, @Res() res: Response) {
-    await this.productsService.remove(id);
-    return sendResponse(res, {
-      statusCode: HttpStatus.OK,
-      success: true,
-      message: 'Product deleted successfully.',
-      data: null,
-    });
+    try {
+      const removedProduct = await this.productsService.remove(id);
+      return sendResponse(res, {
+        statusCode: HttpStatus.OK,
+        success: true,
+        message: 'Product deleted successfully',
+        data: removedProduct,
+      });
+    } catch (err) {
+      return sendResponse(res, {
+        statusCode: HttpStatus.BAD_REQUEST,
+        success: false,
+        message: 'Failed to delete product',
+        data: null,
+      });
+    }
   }
 }
