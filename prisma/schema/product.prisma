@@ -18,6 +18,8 @@ model Product {
   CartItem CartItem[]
 
   OrderItem OrderItem[]
+  favorite Favorite[]
+
 }
 
 model Activity {

@@ -21,6 +21,8 @@ import { InvitationsModule } from './module/invitations/invitations.module';
 // import { PaymentModule } from './module/payment/payment.module';
 import { CartModule } from './module/cart/cart.module';
 import { OrderModule } from './module/order/order.module';
+import { FavoriteModule } from './module/favorite/favorite.module';
+import { BlogModule } from './module/blog/blog.module';
 
 @Module({
   imports: [
@@ -54,6 +56,8 @@ import { OrderModule } from './module/order/order.module';
     InvitationsModule,
     CartModule,
     OrderModule,
+    FavoriteModule,
+    BlogModule,
     // PaymentModule
   ],
   controllers: [AppController],
