@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsIn } from 'class-validator';
+import { IsEnum } from 'class-validator';
 
 export class UpdateOrderStatusDto {
   @ApiProperty({
-    description: 'Order status',
-    enum: ['PENDING', 'PAID', 'CANCELLED', 'FAILED', 'DELIVERED'],
-    example: 'PAID',
+    description: 'New status of the order',
+    enum: ['CANCELLED', 'DELIVERED'],
+    example: 'DELIVERED',
   })
-  @IsString()
-  @IsIn(['PENDING', 'PAID', 'CANCELLED', 'FAILED', 'DELIVERED'])
-  status: 'PENDING' | 'PAID' | 'CANCELLED' | 'FAILED' | 'DELIVERED';
+  @IsEnum(['CANCELLED', 'DELIVERED'], {
+    message: 'Status must be either CANCELLED or DELIVERED',
+  })
+  status: 'CANCELLED' | 'DELIVERED';
 }

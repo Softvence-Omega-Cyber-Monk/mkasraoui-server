@@ -6,15 +6,14 @@ import {
   Body,
   Param,
   Req,
-  Res,
-  Headers,
+  Res
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import sendResponse from 'src/module/utils/sendResponse';
 import { Request as ExpressRequest, Response as ExpressResponse } from 'express'; // ✅ use Express types explicitly
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { Public } from 'src/common/decorators/public.decorators';
@@ -41,50 +40,99 @@ export class OrderController {
     });
   }
 
-  /** GET ORDERS FOR CURRENT USER */
-  @Get('my-orders')
-  @ApiOperation({ summary: 'Get all orders for the authenticated user' })
-  async getUserOrders(@Req() req: ExpressRequest, @Res() res: ExpressResponse) {
-    const orders = await this.orderService.getUserOrders(req.user!.id);
-    return sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: 'Orders fetched successfully',
-      data: orders,
-    });
-  }
+ /** GET ORDERS FOR CURRENT USER */
+@Get('my-orders')
+@ApiOperation({ summary: 'Get all orders for the authenticated user (paginated)' })
+@ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Page number (default: 1)' })
+@ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Number of items per page (default: 10)' })
 
-  /** ADMIN: GET ALL ORDERS */
-  @Get()
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all orders (admin only)' })
-  async getAllOrders(@Res() res: ExpressResponse) {
-    const orders = await this.orderService.getAllOrders();
-    return sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: 'Orders fetched successfully',
-      data: orders,
-    });
-  }
+async getUserOrders(
+  @Req() req: ExpressRequest,
+  @Res() res: ExpressResponse,
+) {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
 
-  /** UPDATE ORDER STATUS (ADMIN) */
-  @Patch(':id/status')
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Update order status (admin only)' })
-  async updateOrderStatus(
-    @Param('id') id: string,
-    @Body('status') body: UpdateOrderStatusDto,
-    @Res() res: ExpressResponse,
-  ) {
-    const order = await this.orderService.updateOrderStatus(id, body.status);
+  const result = await this.orderService.getUserOrders(req.user!.id, page, limit);
+
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Orders fetched successfully',
+    data: result,
+  });
+}
+
+/** ADMIN: GET ALL ORDERS */
+@Get()
+@Roles(Role.ADMIN)
+@ApiOperation({ summary: 'Get all orders (admin only, paginated)' })
+@ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Page number (default: 1)' })
+@ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Number of items per page (default: 10)' })
+async getAllOrders(
+  @Req() req: ExpressRequest,
+  @Res() res: ExpressResponse,
+) {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const result = await this.orderService.getAllOrders(page, limit);
+
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Orders fetched successfully',
+    data: result,
+  });
+}
+
+/** UPDATE ORDER STATUS (ADMIN) */
+@Patch(':id/status')
+@Roles(Role.ADMIN)
+@ApiOperation({ summary: 'Update order status (admin only)' })
+async updateOrderStatus(
+  @Param('id') id: string,
+  @Body() body: UpdateOrderStatusDto,
+  @Res() res: ExpressResponse,
+) {
+  const order = await this.orderService.updateOrderStatus(id, body.status);
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Order status updated successfully',
+    data: order,
+  });
+}
+
+
+
+
+  /** VERIFY PAYMENT SESSION */
+@Get('verify/:sessionId')
+@Public()
+@ApiOperation({ summary: 'Verify Stripe Checkout Session and return order' })
+async verifyCheckoutSession(
+  @Param('sessionId') sessionId: string,
+  @Res() res: ExpressResponse,
+) {
+  try {
+    const order = await this.orderService.handlePaymentSuccess(sessionId);
+
     return sendResponse(res, {
       statusCode: 200,
       success: true,
-      message: 'Order status updated successfully',
+      message: 'Checkout session verified successfully',
       data: order,
     });
+  } catch (err: any) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: err.message || 'Failed to verify session',
+      data: null,
+    });
   }
+}
 
   /** STRIPE WEBHOOK: Handle payment success */
 @Post('webhook')

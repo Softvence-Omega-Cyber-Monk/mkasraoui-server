@@ -66,6 +66,7 @@ export class OrderService {
         quantity: item.quantity,
       })),
       mode: 'payment',
+      customer_email:order.user.email,
       success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/cancel`,
       metadata: {
@@ -80,30 +81,64 @@ export class OrderService {
     return { order, checkoutUrl: session.url };
   }
 
-  /** Get all orders for a user */
-  async getUserOrders(userId: string) {
-    return this.prisma.order.findMany({
+  /** Get all orders for a user with pagination */
+async getUserOrders(userId: string, page: number, limit: number) {
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await this.prisma.$transaction([
+    this.prisma.order.findMany({
       where: { userId },
       include: { items: { include: { product: true } } },
       orderBy: { createdAt: 'desc' },
-    });
-  }
+      skip,
+      take: limit,
+    }),
+    this.prisma.order.count({ where: { userId } }),
+  ]);
 
-  /** Admin: Get all orders */
-  async getAllOrders() {
-    return this.prisma.order.findMany({
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+    orders,
+  };
+}
+
+/** Admin: Get all orders with pagination */
+async getAllOrders(page: number, limit: number) {
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await this.prisma.$transaction([
+    this.prisma.order.findMany({
       include: {
         user: true,
         items: { include: { product: true } },
       },
       orderBy: { createdAt: 'desc' },
-    });
-  }
+      skip,
+      take: limit,
+    }),
+    this.prisma.order.count(),
+  ]);
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+    orders,
+  };
+}
 
   /** Update order status (admin only) */
   async updateOrderStatus(
     orderId: string,
-    status: 'PENDING' | 'PAID' | 'CANCELLED' | 'FAILED' | 'DELIVERED',
+    status: 'CANCELLED' |'DELIVERED',
   ) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new NotFoundException('Order not found');
