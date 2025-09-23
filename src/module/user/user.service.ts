@@ -9,7 +9,7 @@ import { Role, ServiceCategory } from '@prisma/client';
 import { buildFileUrl } from 'src/helper/urlBuilder';
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
-import { contains } from 'class-validator';
+
 
 @Injectable()
 export class UserService {
@@ -105,15 +105,7 @@ async requestProvider(
     return result;
   }
 
-  // Get all providers with optional isApproved filter 
-  // async getAllProviders(isApproved?: boolean) {
-  //   const providers = await this.prisma.providerProfile.findMany({
-  //     where: isApproved !== undefined ? { isApproved } : {},
-  //     orderBy: { createdAt: 'desc' },
-  //     include: { user: true,reviews:true },
-  //   });
-  //   return providers;
-  // }
+
   async getAllProviders(query: any) {
   const {
     isApproved,
@@ -163,6 +155,21 @@ async requestProvider(
   };
 }
 
+async getProviderById(id: string) {
+  const provider = await this.prisma.providerProfile.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      reviews: true,
+    },
+  });
+
+  if (!provider) {
+    throw new NotFoundException('Provider not found');
+  }
+
+  return provider;
+}
 
 async updateProviderProfile(
   userId: string,

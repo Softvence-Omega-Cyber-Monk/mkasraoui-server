@@ -6,7 +6,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaService } from './prisma/prisma.service';
 import { setupSwagger } from './swagger/swagger.setup';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -14,14 +14,23 @@ async function bootstrap() {
     bodyParser: true,
   });
 
+
+
+
   app.enableCors({
    origin: [
     'http://localhost:5173',  
-    'https://checkout.stripe.com',
   ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+
+   // ✅ Stripe webhook: keep raw body
+  app.use(
+    '/payments/webhook',
+    bodyParser.raw({ type: 'application/json' })
+  );
 
   const reflector = app.get(Reflector);
   const prisma = app.get(PrismaService);

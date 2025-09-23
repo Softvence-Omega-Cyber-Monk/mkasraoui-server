@@ -13,7 +13,6 @@ model Quote{
   time  DateTime
   numberOfGuest  Int 
   partyTheme  String?
-  partyType    PartyType
   partyLocation  String
   description   String
   budgetRange   String
@@ -30,17 +29,3 @@ enum QuoteStatus {
   BOOKED
 }
 
-enum PartyType {
-  BIRTHDAY
-  WEDDING
-  ENGAGEMENT
-  ANNIVERSARY
-  BABY_SHOWER
-  GRADUATION
-  HOLIDAY
-  HOUSE_PARTY
-  POOL_PARTY
-  FESTIVAL
-  CORPORATE_EVENT
-  FAREWELL
-}
