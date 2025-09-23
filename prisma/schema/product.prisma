@@ -14,8 +14,12 @@ model Product {
   total_review Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  CartItem CartItem[]
+
+  OrderItem OrderItem[]
   favorite Favorite[]
-  Order Order[]
+
 }
 
 model Activity {

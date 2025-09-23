@@ -17,8 +17,10 @@ import { ProviderReviewModule } from './module/provider-review/provider-review.m
 import { QuoteModule } from './module/quote/quote.module';
 import { MailModule } from './module/mail/mail.module';
 import { InvitationsModule } from './module/invitations/invitations.module';
-import { OrderModule } from './module/order/order.module';
+
 // import { PaymentModule } from './module/payment/payment.module';
+import { CartModule } from './module/cart/cart.module';
+import { OrderModule } from './module/order/order.module';
 import { FavoriteModule } from './module/favorite/favorite.module';
 import { BlogModule } from './module/blog/blog.module';
 
@@ -52,6 +54,7 @@ import { BlogModule } from './module/blog/blog.module';
     QuoteModule,
     MailModule,
     InvitationsModule,
+    CartModule,
     OrderModule,
     FavoriteModule,
     BlogModule,
