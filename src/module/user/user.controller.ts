@@ -156,6 +156,27 @@ async getAllProviders(@Query() query: any, @Res() res: any) {
     });
   }
 
+
+/** GET SINGLE PROVIDER */
+@Get('providers/:id')
+@Public()
+@ApiOperation({ summary: 'Get single provider details by ID' })
+@ApiResponse({ status: 200, description: 'Provider fetched successfully' })
+@ApiResponse({ status: 404, description: 'Provider not found' })
+async getProviderById(@Param('id') id: string, @Res() res: any) {
+  const result = await this.userService.getProviderById(id);
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Provider fetched successfully',
+    data: result,
+  });
+}
+
+
+
+
+
   // Admin only: Reject a provider request
   @Delete('provider-requests/:id/reject')
   @Roles(Role.ADMIN)

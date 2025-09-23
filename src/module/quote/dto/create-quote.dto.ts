@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
-import { PartyType } from '@prisma/client';
+
 
 export class CreateQuoteDto {
   @ApiProperty({ example: 'provider-profile-uuid' })
@@ -40,9 +40,6 @@ export class CreateQuoteDto {
   @IsString()
   partyTheme?: string;
 
-  @ApiProperty({ enum: PartyType, example: PartyType.BIRTHDAY })
-  @IsEnum(PartyType)
-  partyType: PartyType;
 
   @ApiProperty({ example: 'New York City, Central Park' })
   @IsString()
