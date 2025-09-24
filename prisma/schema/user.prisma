@@ -21,7 +21,7 @@ model User{
   Quote Quote[]
   favorite Favorite[]
   Order Order[]
-
+  subscription Subscription[]
   Cart Cart[]
   blog Blog[]
 }

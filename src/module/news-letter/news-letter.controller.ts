@@ -2,12 +2,12 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus } fr
 import { Response } from 'express'; // Import Response from 'express'
 import { NewsLetterService } from './news-letter.service';
 import { CreateNewsLetterDto } from './dto/create-news-letter.dto';
-import { UpdateNewsLetterDto } from './dto/update-news-letter.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorators';
 import sendResponse from '../utils/sendResponse';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { CreatePromotionalEmailDto } from './dto/promotional.mail.dto';
 
 
 @Controller('news-letter')
@@ -96,5 +96,29 @@ export class NewsLetterController {
       data: null,
     });
    }
+  }
+
+
+  @Post('/promotional-mail')
+  @Public()
+  @ApiBody({type:CreatePromotionalEmailDto})
+  async sendPromotionalMail(@Body() body: { subject: string; message: string }, @Res() res: Response) {
+    try {
+      const { subject, message } = body;
+      const data = await this.newsLetterService.sendPromotionalMail(subject, message);
+      sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Promotional mail sent successfully',
+        data,
+      });
+    } catch (error) {
+      sendResponse(res, {
+        statusCode: HttpStatus.BAD_REQUEST,
+        success: false,
+        message: error.message,
+        data: null,
+      });
+    }
   }
 }
