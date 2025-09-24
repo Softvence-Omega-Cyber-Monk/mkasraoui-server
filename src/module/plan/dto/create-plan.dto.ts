@@ -1,4 +1,3 @@
-// src/plan/dto/create-plan.dto.ts
 
 import { IsString, IsNotEmpty, IsNumber, IsBoolean, IsOptional, IsArray, ValidateNested, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
