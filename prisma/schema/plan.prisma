@@ -1,0 +1,8 @@
+model Plan {
+    id String @id @default(uuid())
+    plan_name String
+    features Json?
+    price_id String?
+    price Float
+    is_active Boolean
+}

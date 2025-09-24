@@ -7,6 +7,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { setupSwagger } from './swagger/swagger.setup';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import * as bodyParser from 'body-parser';
+import { TransformInterceptor } from './common/decorators/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -40,6 +41,7 @@ async function bootstrap() {
     new RolesGuard(reflector),
   );
 
+   app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
