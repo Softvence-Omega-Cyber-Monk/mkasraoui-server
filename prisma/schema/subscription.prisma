@@ -1,9 +1,16 @@
 model Subscription {
     id String @id @default(uuid())
+
     plan_name Plan_name
     status Subscription_status
     start_data DateTime
     end_date DateTime?
+
+    plan_name String
+    status Subscription_status
+    start_data DateTime
+    end_date DateTime
+
     stripe_subscription_id String?
     user_id String
     user User @relation(fields: [user_id],references: [id])
@@ -12,6 +19,7 @@ enum Subscription_status {
     ACTIVE
     INACTIVE
     CANCELED
+
 }
 
 enum Plan_name {
