@@ -24,6 +24,12 @@ model User{
 
   Cart Cart[]
   blog Blog[]
+
+  userConversations Conversation[] @relation("UserConversations")
+
+  providerConversations Conversation[] @relation("ProviderConversations")
+
+  Message Message[]
 }
 
 

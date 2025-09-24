@@ -1,0 +1,22 @@
+model Conversation {
+  id         String    @id @default(cuid())
+  userId     String
+  providerId String
+  user       User      @relation("UserConversations", fields: [userId], references: [id])
+  provider   User      @relation("ProviderConversations", fields: [providerId], references: [id])
+  messages   Message[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String?
+  fileUrl        String?   
+  isRead         Boolean      @default(false)
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+  createdAt      DateTime     @default(now())
+}

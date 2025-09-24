@@ -23,6 +23,7 @@ import { CartModule } from './module/cart/cart.module';
 import { OrderModule } from './module/order/order.module';
 import { FavoriteModule } from './module/favorite/favorite.module';
 import { BlogModule } from './module/blog/blog.module';
+import { ChatModule } from './module/chat/chat.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { BlogModule } from './module/blog/blog.module';
     OrderModule,
     FavoriteModule,
     BlogModule,
+    ChatModule,
     // PaymentModule
   ],
   controllers: [AppController],
