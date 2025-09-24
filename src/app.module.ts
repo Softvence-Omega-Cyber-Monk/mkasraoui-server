@@ -24,6 +24,7 @@ import { OrderModule } from './module/order/order.module';
 import { FavoriteModule } from './module/favorite/favorite.module';
 import { BlogModule } from './module/blog/blog.module';
 import { NewsLetterModule } from './module/news-letter/news-letter.module';
+import { PlanModule } from './module/plan/plan.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { NewsLetterModule } from './module/news-letter/news-letter.module';
     FavoriteModule,
     BlogModule,
     NewsLetterModule,
+    PlanModule,
     // PaymentModule
   ],
   controllers: [AppController],
