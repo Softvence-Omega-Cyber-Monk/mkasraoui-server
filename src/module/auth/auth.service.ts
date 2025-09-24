@@ -23,6 +23,7 @@ import {
   hashOtpCode,
   verifyOtp,
 } from './auth.utils';
+import { Plan_name, Subscription_status } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -56,7 +57,15 @@ export class AuthService {
         password: hashedPassword,
       },
     });
-
+    // create initial subscription table for all user
+    await this.prisma.subscription.create({
+      data: {
+        user_id: newUser.id,
+        plan_name: Plan_name.FREE,
+        start_data: new Date(),
+        status: Subscription_status.ACTIVE,
+      },
+    })
     const tokens = await getTokens(
       this.jwtService,
       newUser.id,
