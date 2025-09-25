@@ -1,23 +1,18 @@
 model Subscription {
     id String @id @default(uuid())
-
-    plan_name Plan_name
+    plan_name String @default("FREE")
     status Subscription_status
     start_data DateTime
     end_date DateTime?
-
     stripe_subscription_id String?
     user_id String
     user User @relation(fields: [user_id],references: [id])
+    plan_id String?
+    plan Plan? @relation(fields: [plan_id],references: [id])
 }
 enum Subscription_status {
     ACTIVE
     INACTIVE
     CANCELED
 
-}
-
-enum Plan_name {
-    FREE
-    PREMIUM
 }

@@ -16,7 +16,8 @@ export class PlanService {
 
    async create(createPlanDto:any): Promise<ResponseData<Plan>> {
     const { price_id, ...dataToCreate } = createPlanDto;
-
+    console.log(createPlanDto);
+    
     const data: Prisma.PlanCreateInput = {
       ...dataToCreate,
       features: dataToCreate.features as unknown as Prisma.JsonValue,
@@ -67,7 +68,7 @@ export class PlanService {
           id: id,
         },
         data: {
-          plan_name: updatePlanDto.plan_name,
+          name: updatePlanDto.planName,
           features: updatePlanDto.features,
           price: updatePlanDto.price,
           is_active: updatePlanDto.is_active,
