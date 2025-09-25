@@ -23,7 +23,7 @@ import {
   hashOtpCode,
   verifyOtp,
 } from './auth.utils';
-import { Plan_name, Subscription_status } from '@prisma/client';
+import {  Plan_name, Subscription_status } from '@prisma/client';
 
 @Injectable()
 export class AuthService {

@@ -1,5 +1,5 @@
 
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException } from '@nestjs/common';
 import { PlanService } from './plan.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
@@ -10,8 +10,13 @@ export class PlanController {
   constructor(private readonly planService: PlanService) {}
 
   @Post()
-  create(@Body() createPlanDto: CreatePlanDto): Promise<any> {
-    return this.planService.create(createPlanDto);
+  async create(@Body() createPlanDto: CreatePlanDto): Promise<any> {
+    try{
+      const res=await this.planService.create(createPlanDto);
+      return res
+    }catch(error){
+     throw new HttpException(error.message, 500);
+    }
   }
 
   @Get()

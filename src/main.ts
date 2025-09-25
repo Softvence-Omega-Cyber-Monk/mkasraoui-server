@@ -32,6 +32,10 @@ async function bootstrap() {
     '/payments/webhook',
     bodyParser.raw({ type: 'application/json' })
   );
+  app.use(
+    'subscription/webhook',
+    bodyParser.raw({ type: 'application/json' })
+  );
 
   const reflector = app.get(Reflector);
   const prisma = app.get(PrismaService);
