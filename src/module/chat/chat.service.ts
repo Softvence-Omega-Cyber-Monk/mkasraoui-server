@@ -69,7 +69,15 @@ async getConversationsWithUnread(userId: string, page = 1, limit = 10) {
   };
 }
 
-
+async getConversationById(conversationId: string) {
+    return this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        user: true,
+        provider: true,
+      },
+    });
+  }
 
 /** Get messages in a conversation (paginated) and mark unread as read */
 async getMessages(conversationId: string, userId: string, page = 1, limit = 20) {
@@ -144,6 +152,16 @@ async getMessages(conversationId: string, userId: string, page = 1, limit = 20) 
   }
 
 
+async markMessagesAsRead(conversationId: string, userId: string) {
+  await this.prisma.message.updateMany({
+    where: {
+      conversationId,
+      senderId: { not: userId },
+      isRead: false,
+    },
+    data: { isRead: true },
+  });
+}
 
 
 
