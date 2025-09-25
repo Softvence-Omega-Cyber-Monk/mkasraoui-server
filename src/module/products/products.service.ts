@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductDTO } from './dto/create-product.dto';
+import { CreateProductDTO, ProductFilterDto } from './dto/create-product.dto';
 import { buildFileUrl } from 'src/helper/urlBuilder';
 
 @Injectable()
@@ -12,10 +12,18 @@ export class ProductsService {
   async create(createProductDto: CreateProductDTO, imges: Express.Multer.File[]) {
     try {
       const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];
-
+      console.log(createProductDto);
       const res = await this.prisma.product.create({
         data: {
-          ...createProductDto, 
+          title: createProductDto.title,
+          description: createProductDto.description,
+          product_type: createProductDto.product_type as any,
+          up_to_kids: createProductDto.up_to_kids,
+          age_range: createProductDto.age_range,
+          price: createProductDto.price,
+          theme: createProductDto.theme,
+          included: createProductDto.included,
+          tutorial: createProductDto.tutorial,
           imges: imagePaths,
           avg_rating: 0,
           total_review: 0,
@@ -35,10 +43,55 @@ export class ProductsService {
     }
   }
 
-  async findAll() {
-    return this.prisma.product.findMany({ include: { reviews: true } });
+ async findAll(filterDto: ProductFilterDto = {}) {
+  const { search, age_range, theme } = filterDto;
+
+  const filterCriteria: any = {};
+
+  if (age_range) {
+    filterCriteria.age_range = age_range;
+  }
+  if (theme) {
+    filterCriteria.theme = theme;
   }
 
+  let searchCondition: any = {};
+  if (search) {
+    const searchString = `%${search}%`;
+
+    searchCondition.OR = [
+      { title: { contains: search, mode: 'insensitive' as const } },
+      { description: { contains: search, mode: 'insensitive' as const } },
+    ];
+  }
+  const commonWhere = {
+    ...searchCondition,
+    ...filterCriteria,
+  };
+
+
+  // 3. Fetch DIY Boxes
+  const diyBoxes = await this.prisma.product.findMany({
+    where: {
+      product_type: 'DIY_BOX',
+      ...commonWhere, 
+    },
+    include: { reviews: true },
+  });
+
+  const gifts = await this.prisma.product.findMany({
+    where: {
+      product_type: 'GIFT',
+      ...commonWhere,
+    },
+    include: { reviews: true },
+  });
+
+  return { diyBoxes, gifts };
+}
+
+
+  // Get product by Id
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },
@@ -69,6 +122,7 @@ export class ProductsService {
           where: { id },
           data: {
             ...productData,
+            ...(productData.product_type && { product_type: productData.product_type as any }),
             ...(imagePaths ? { imges: imagePaths } : {}),
           },
         });
@@ -105,4 +159,6 @@ export class ProductsService {
       return prisma.product.delete({ where: { id } });
     });
   }
+
+
 }
