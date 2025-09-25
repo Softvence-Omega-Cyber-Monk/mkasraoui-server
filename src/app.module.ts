@@ -25,6 +25,7 @@ import { FavoriteModule } from './module/favorite/favorite.module';
 import { BlogModule } from './module/blog/blog.module';
 import { NewsLetterModule } from './module/news-letter/news-letter.module';
 import { PlanModule } from './module/plan/plan.module';
+import { SubscriptionModule } from './module/subscription/subscription.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { PlanModule } from './module/plan/plan.module';
     BlogModule,
     NewsLetterModule,
     PlanModule,
+    SubscriptionModule,
     // PaymentModule
   ],
   controllers: [AppController],

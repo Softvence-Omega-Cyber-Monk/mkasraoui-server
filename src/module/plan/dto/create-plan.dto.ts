@@ -24,11 +24,11 @@ export class FeatureDto {
 export class CreatePlanDto {
   @ApiProperty({
     description: 'The unique name of the plan.',
-    example: 'Non-Subscriber',
+    example: 'PREMIUM',
   })
   @IsString()
   @IsNotEmpty()
-  plan_name: string;
+  name: string;
 
   @ApiProperty({
     description: 'A list of features included in the plan with their usage limits.',
@@ -63,7 +63,7 @@ export class CreatePlanDto {
   is_active?: boolean;
   @ApiProperty({
     description: 'price id from stripe.',
-    example: "price_1SAjNZRwOBvM8IAHJMvDXlJr",
+    example: "price_1RuIseCiM0crZsfwqv3vZZGj",
   })
   @IsString()
   @IsOptional()

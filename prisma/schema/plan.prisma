@@ -1,8 +1,15 @@
 model Plan {
     id String @id @default(uuid())
-    plan_name String
+    name String
     features Json?
     price_id String?
     price Float
     is_active Boolean
+    subscription Subscription[]
+    plan_duration String?
+}
+
+enum Plan_name {
+    FREE
+    PREMIUM
 }
