@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "public"."Theme" AS ENUM ('SUPERHERO', 'SPACE', 'ART', 'SCIENCE', 'MUSIC', 'SPORTS', 'PRINCESS', 'DIONSOUR', 'UNICORNS', 'PIRATES');
+
+-- AlterTable
+ALTER TABLE "public"."Product" ADD COLUMN     "theme" TEXT NOT NULL DEFAULT 'SUPERHERO';

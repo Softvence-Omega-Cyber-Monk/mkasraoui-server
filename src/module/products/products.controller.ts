@@ -11,10 +11,11 @@ import {
   Res,
   HttpStatus,
   HttpException,
+  Query,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ProductsService } from './products.service';
-import { CreateProductDTO } from './dto/create-product.dto';
+import { CreateProductDTO, ProductFilterDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
@@ -52,7 +53,8 @@ export class ProductsController {
           example: JSON.stringify({
             title: 'Building Blocks',
             description: 'A set of colorful blocks...',
-            product_type: 'Toy',
+            product_type: 'DIY_BOX',
+            theme:'SUPERHERO',
             age_range: '3-6 years',
             price: 25.99,
             included: ['50 pieces', 'instruction manual'],
@@ -132,22 +134,30 @@ export class ProductsController {
   // Get all product
   @Get()
   @Public()
-  async findAll(@Res() res: Response) {
-    try{
-      const data = await this.productsService.findAll();
-    return sendResponse(res, {
-      statusCode: HttpStatus.OK,
-      success: true,
-      message: 'Data retrieved successfully',
-      data: data,
-    });
-    }catch(err){
+  @ApiOperation({ summary: 'Retrieve all DIY boxes and Gifts with optional search and filters.' })
+  @ApiResponse({ status: 200, description: 'Data retrieved successfully.' })
+  @ApiResponse({ status: 400, description: 'Failed to retrieve data.' })
+  async findAll(
+    @Query() filterDto: ProductFilterDto,
+    @Res() res: Response
+  ) {
+    try {
+      const data = await this.productsService.findAll(filterDto); 
+      
+      return sendResponse(res, {
+        statusCode: HttpStatus.OK,
+        success: true,
+        message: 'Data retrieved successfully',
+        data: data,
+      });
+    } catch (err) {
+      console.error(err); 
       return sendResponse(res, {
         statusCode: HttpStatus.BAD_REQUEST,
         success: false,
         message: 'Failed to retrieve data',
         data: null,
-      })
+      });
     }
   }
 
