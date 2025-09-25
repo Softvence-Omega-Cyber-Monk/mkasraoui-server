@@ -7,6 +7,9 @@ import { PrismaService } from './prisma/prisma.service';
 import { setupSwagger } from './swagger/swagger.setup';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import * as bodyParser from 'body-parser';
+import { join } from 'path';
+import * as express from 'express';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -14,31 +17,29 @@ async function bootstrap() {
     bodyParser: true,
   });
 
+  // Ensure uploads folder exists
+  const uploadsDir = join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('Created uploads folder at', uploadsDir);
+  }
 
-
+  // Serve uploads statically
+  app.use('/uploads', express.static(uploadsDir));
 
   app.enableCors({
-   origin: [
-    'http://localhost:5173',  
-  ],
+    origin: ['http://localhost:5173'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-
-   // ✅ Stripe webhook: keep raw body
-  app.use(
-    '/payments/webhook',
-    bodyParser.raw({ type: 'application/json' })
-  );
+  // Stripe webhook: keep raw body
+  app.use('/payments/webhook', bodyParser.raw({ type: 'application/json' }));
 
   const reflector = app.get(Reflector);
   const prisma = app.get(PrismaService);
 
-  app.useGlobalGuards(
-    new JwtGuard(reflector, prisma),
-    new RolesGuard(reflector),
-  );
+  app.useGlobalGuards(new JwtGuard(reflector, prisma), new RolesGuard(reflector));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -53,6 +54,7 @@ async function bootstrap() {
 
   setupSwagger(app);
   await app.listen(process.env.PORT ?? 3000);
+  console.log(`Server running on port ${process.env.PORT ?? 3000}`);
 }
 
 bootstrap();

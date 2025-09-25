@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SendMessageDto } from './dto/sendMessage.dto';
 
 @Injectable()
 export class ChatService {
@@ -29,7 +30,11 @@ async getConversationsWithUnread(userId: string, page = 1, limit = 10) {
       where: { OR: [{ userId }, { providerId: userId }] },
       include: {
         user: true,
-        provider: true,
+        provider: {
+          include:{
+            providerProfile:true
+          }
+        },
         messages: {
           take: 1,
           orderBy: { createdAt: 'desc' }, // last message
@@ -106,7 +111,7 @@ async getMessages(conversationId: string, userId: string, page = 1, limit = 20) 
 
 
   /** Send a new message */
- async sendMessage({ conversationId, senderId, content, fileUrl }) {
+ async sendMessage({ conversationId, senderId, content, fileUrl }:SendMessageDto) {
     const conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
     });

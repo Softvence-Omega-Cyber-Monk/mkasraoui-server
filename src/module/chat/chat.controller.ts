@@ -92,7 +92,7 @@ async getMessages(
 }
 
   /** Send message */
- @Post('chat/conversations/:id/messages')
+ @Post('conversations/:id/messages')
 @Roles(Role.USER, Role.PROVIDER)
 @ApiConsumes('multipart/form-data')
 @ApiBody({
@@ -119,7 +119,7 @@ async getMessages(
 async sendMessage(
   @Req() req: Request,
   @Param('id') conversationId: string,
-  @Body('content') content: string,
+  @Body('content') content: string ,
   @UploadedFile() file: Express.Multer.File, // single file
   @Res() res: any,
 ) {
