@@ -275,4 +275,12 @@ export class UserService {
     const { password, ...safeUser } = user;
     return safeUser;
   }
+
+  async getAllUsers() {
+    const users = await this.prisma.user.findMany({
+      where: { role: Role.USER, isDeleted: false },
+      orderBy: { createdAt: 'desc' },
+    });
+    return users;
+  }
 }
