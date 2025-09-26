@@ -100,7 +100,7 @@ export class SubscriptionService {
       throw new BadRequestException('Invalid Stripe signature');
     }
 
-    //  Handle important events
+    //  ----------------------------Handle important events--------------------------
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
