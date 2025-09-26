@@ -25,6 +25,7 @@ model User{
   Cart Cart[]
   blog Blog[]
   stripe_customer_id String?
+  profile_image String?
 }
 
 

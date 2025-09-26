@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -302,4 +303,79 @@ async updateProviderProfile(
       data: users,
     };
   }
+
+
+  @Patch()
+@ApiConsumes('multipart/form-data') // 1. Set content type for file uploads
+@ApiOperation({ summary: 'Update user details (name, phone, and optional profile image).' })
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        description: 'New user name.',
+        example: 'Jane Doe',
+      },
+      phone: {
+        type: 'string',
+        description: 'New user phone number.',
+        example: '+1234567890',
+      },
+      // Multer only allows one file field to be defined in FilesInterceptor.
+      // We assume 'files' contains the profile image.
+      files: {
+        type: 'array',
+        maxItems: 1, // Restrict to one file for a profile picture
+        items: {
+          type: 'string',
+          format: 'binary',
+        },
+        description: 'Optional new profile image file (up to 1).',
+      },
+    },
+    // You can make fields optional for a PATCH request
+    required: [], 
+  },
+})
+@ApiResponse({ status: 200, description: 'User updated successfully' })
+@ApiResponse({ status: 400, description: 'Invalid input or file upload error.' })
+@UseInterceptors(
+  FilesInterceptor('files', 1, { 
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+      },
+    }),
+  }),
+)
+async updateUser(
+  @Req() req: any, 
+  @Body() body: { name?: string; phone?: string },
+  @UploadedFiles() files: Array<Express.Multer.File>,
+) {
+  // Extract the single file if present
+ try{
+   const profileImageFile = files && files.length > 0 ? files[0] : null;
+
+  // Prepare data for the service
+  const updateData = {
+    ...body,
+    profileImage: profileImageFile, 
+  };
+  const updatedUser = await this.userService.updateUser(req.user.id, updateData);
+  
+  return {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'User updated successfully',
+    data: updatedUser,
+  };
+}catch(err){
+  throw new BadRequestException('Invalid input or file upload error.');
+ }
+}
 }
