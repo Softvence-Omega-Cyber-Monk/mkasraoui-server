@@ -33,12 +33,9 @@ import { Public } from 'src/common/decorators/public.decorators';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import sendResponse from 'src/module/utils/sendResponse';
-import { Express } from 'express'; // Required for Express.Multer.File type
-
-// Define the file storage configuration once
 const fileStorageOptions = {
   storage: diskStorage({
-    destination: './uploads', // Ensure this directory exists
+    destination: './uploads',
     filename: (req, file, callback) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
       const ext = extname(file.originalname);
@@ -53,7 +50,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   // --------------------------------------------------------------------------
-  // CREATE PRODUCT ROUTE (UPDATED)
+  //                 CREATE PRODUCT ROUTE (UPDATED)
   // --------------------------------------------------------------------------
   @Post()
   @ApiConsumes('multipart/form-data')
@@ -111,24 +108,21 @@ export class ProductsController {
     description: 'An unexpected error occurred.',
   })
   @UseInterceptors(
-    // Use FileFieldsInterceptor to handle separate fields
     FileFieldsInterceptor(
       [
-        { name: 'files', maxCount: 10 },        // For product images
-        { name: 'tutorialVideo', maxCount: 1 }, // For the single video file
+        { name: 'files', maxCount: 10 },       
+        { name: 'tutorialVideo', maxCount: 1 },
       ],
-      fileStorageOptions, // Reused storage options
+      fileStorageOptions,
     ),
   )
   async createProduct(
     @Body('data') data: string,
-    // Capture the files as an object map from FileFieldsInterceptor
     @UploadedFiles() uploadedFiles: {
       files?: Array<Express.Multer.File>;
       tutorialVideo?: Array<Express.Multer.File>;
     },
   ) {
-    // Extract files safely
     const imageFiles = uploadedFiles.files || [];
     const tutorialVideoFile = uploadedFiles.tutorialVideo
       ? uploadedFiles.tutorialVideo[0]
@@ -140,7 +134,6 @@ export class ProductsController {
 
     try {
       const productData: CreateProductDTO = JSON.parse(data);
-      // Pass all files to the service layer (requires service update)
       const createdProduct = await this.productsService.create(
         productData,
         imageFiles,
@@ -166,7 +159,7 @@ export class ProductsController {
   }
 
   // --------------------------------------------------------------------------
-  // GET ALL PRODUCTS ROUTE (NO CHANGE)
+  //               GET ALL PRODUCTS ROUTE (NO CHANGE)
   // --------------------------------------------------------------------------
   @Get()
   @Public()
@@ -198,7 +191,7 @@ export class ProductsController {
   }
 
   // --------------------------------------------------------------------------
-  // GET PRODUCT BY ID ROUTE (NO CHANGE)
+  //                    GET PRODUCT BY ID ROUTE (NO CHANGE)
   // --------------------------------------------------------------------------
   @Get(':id')
   @Public()
@@ -222,7 +215,7 @@ export class ProductsController {
   }
 
   // --------------------------------------------------------------------------
-  // UPDATE PRODUCT ROUTE (UPDATED)
+  //                      UPDATE PRODUCT ROUTE (UPDATED)
   // --------------------------------------------------------------------------
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
@@ -237,7 +230,6 @@ export class ProductsController {
             items: { type: 'string', format: 'binary' },
             description: 'New product image files to replace/add to existing ones.',
         },
-        // ADDED: Swagger documentation for the tutorial video update
         tutorialVideo: {
             type: 'string',
             format: 'binary',
@@ -247,7 +239,6 @@ export class ProductsController {
     },
   })
   @UseInterceptors(
-    // Use FileFieldsInterceptor to handle separate fields for update
     FileFieldsInterceptor(
       [
         { name: 'files', maxCount: 10 },
@@ -259,14 +250,12 @@ export class ProductsController {
   async update(
     @Param('id') id: string,
     @Body('data') data: string,
-    // Capture the files as an object map from FileFieldsInterceptor
     @UploadedFiles() uploadedFiles: {
         files?: Array<Express.Multer.File>;
         tutorialVideo?: Array<Express.Multer.File>;
     },
     @Res() res: Response,
   ) {
-    // Extract files safely
     const imageFiles = uploadedFiles.files || [];
     const tutorialVideoFile = uploadedFiles.tutorialVideo
         ? uploadedFiles.tutorialVideo[0]
@@ -274,7 +263,6 @@ export class ProductsController {
         
     try {
       const updateProductDto: UpdateProductDto = JSON.parse(data);
-      // Pass all files to the service layer (requires service update)
       const updatedProduct = await this.productsService.update(
           id, 
           updateProductDto, 
@@ -299,7 +287,7 @@ export class ProductsController {
   }
 
   // --------------------------------------------------------------------------
-  // DELETE PRODUCT ROUTE (NO CHANGE)
+  //                   DELETE PRODUCT ROUTE (NO CHANGE)
   // --------------------------------------------------------------------------
   @Delete(':id')
   @Roles(Role.ADMIN)

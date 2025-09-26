@@ -3,7 +3,6 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDTO, ProductFilterDto } from './dto/create-product.dto';
 import { buildFileUrl } from 'src/helper/urlBuilder';
-import { Express } from 'express'; // Import Express for Multer types
 
 @Injectable()
 export class ProductsService {
@@ -13,17 +12,14 @@ export class ProductsService {
   async create(
     createProductDto: CreateProductDTO,
     imges: Express.Multer.File[],
-    tutorialVideo: Express.Multer.File | null, // Correctly handle the optional single file
+    tutorialVideo: Express.Multer.File | null,
   ) {
     try {
-      // 1. Process Images
       const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];
 
-      // 2. Process Tutorial Video
-      // If a video file exists, create its URL; otherwise, use null or the URL from DTO (if it contains an existing reference)
       const tutorialVideoUrl = tutorialVideo
         ? buildFileUrl(tutorialVideo.filename)
-        : createProductDto.tutorial || null; // Fallback to DTO property if file is missing
+        : createProductDto.tutorial || null;
 
       const discouted_price = createProductDto.price * 0.8;
 
@@ -37,7 +33,6 @@ export class ProductsService {
           price: createProductDto.price,
           theme: createProductDto.theme,
           included: createProductDto.included,
-          // Use the generated video URL here
           tutorial: tutorialVideoUrl, 
           discounted_price: discouted_price,
           imges: imagePaths,
