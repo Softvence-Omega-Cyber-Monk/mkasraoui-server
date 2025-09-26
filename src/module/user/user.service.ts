@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Role, ServiceCategory } from '@prisma/client';
-import { buildFileUrl } from 'src/helper/urlBuilder';
+
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
+import { profile } from 'console';
+import { buildFileUrl } from 'src/helper/urlBuilder';
 
 
 @Injectable()
@@ -282,5 +284,22 @@ export class UserService {
       orderBy: { createdAt: 'desc' },
     });
     return users;
+  }
+
+  async updateUser(id: string, dto: any) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    const imageuer=dto.profileImage?buildFileUrl(dto.profileImage.filename):null;
+    const result = await this.prisma.user.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        phone: dto.phone,
+        profile_image: imageuer,
+        
+      },
+    });
+
+    return result;
   }
 }
