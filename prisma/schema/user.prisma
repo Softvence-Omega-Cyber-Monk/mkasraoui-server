@@ -24,6 +24,12 @@ model User{
   subscription Subscription[]
   Cart Cart[]
   blog Blog[]
+
+  userConversations Conversation[] @relation("UserConversations")
+
+  providerConversations Conversation[] @relation("ProviderConversations")
+
+  Message Message[]
   stripe_customer_id String?
 }
 
