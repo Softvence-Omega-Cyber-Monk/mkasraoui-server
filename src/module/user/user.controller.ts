@@ -288,4 +288,18 @@ async updateProviderProfile(
       data: user,
     };
   }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all users (Admin only)' })
+  @Roles(Role.ADMIN)
+  @ApiResponse({ status: 200, description: 'Returns list of users' })
+  async getAllUsers() {
+    const users = await this.userService.getAllUsers();
+    return {
+      statusCode: 200,
+      success: true,
+      message: 'Users fetched successfully',
+      data: users,
+    };
+  }
 }

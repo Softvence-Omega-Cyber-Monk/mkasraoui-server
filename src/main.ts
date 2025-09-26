@@ -10,6 +10,7 @@ import * as bodyParser from 'body-parser';
 import { join } from 'path';
 import * as express from 'express';
 import * as fs from 'fs';
+import { TransformInterceptor } from './common/decorators/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -33,14 +34,23 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Stripe webhook: keep raw body
-  app.use('/payments/webhook', bodyParser.raw({ type: 'application/json' }));
+
+   // ✅ Stripe webhook: keep raw body
+  app.use(
+    '/payments/webhook',
+    bodyParser.raw({ type: 'application/json' })
+  );
+  app.use(
+    'subscription/webhook',
+    bodyParser.raw({ type: 'application/json' })
+  );
 
   const reflector = app.get(Reflector);
   const prisma = app.get(PrismaService);
 
   app.useGlobalGuards(new JwtGuard(reflector, prisma), new RolesGuard(reflector));
 
+   app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

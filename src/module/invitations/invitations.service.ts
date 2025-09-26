@@ -7,6 +7,7 @@ import { MailService } from '../mail/mail.service';
 import { MailTemplatesService } from '../mail/invitationFormat';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { Status } from '@prisma/client';
 @Injectable()
 export class InvitationsService {
   constructor(
@@ -24,17 +25,17 @@ async createAndSendInvitation(email: string, file: Express.Multer.File, userId: 
     const newInvitation = await this.prisma.invitation.create({
       data: {
         email,
-        invitationToken: token, // Using the correct token
+        invitationToken: token,
         status: 'PENDING',
         userId: userId,
-        image: fileCid, // Using the correct CID for the image
+        image: fileCid,
       },
     });
     console.log(newInvitation);
-    const confirmationLink = `${process.env.CLIENT_URL}/invitations/confirm?token=${token}`; // Using the correct token
+    const confirmationLink = `${process.env.CLIENT_URL}/invitations/confirm?token=${token}`;
     console.log(confirmationLink);
     const htmlContent = await this.mailTemplatesService.getInvitationTemplate(
-      fileCid, // Using the correct CID for the image
+      fileCid, 
       confirmationLink
     );
 
@@ -54,7 +55,7 @@ async createAndSendInvitation(email: string, file: Express.Multer.File, userId: 
           id: userId
         },
         data: {
-          confirmation_token: token, // Using the correct token
+          confirmation_token: token,
           invitation_send: {
             increment: 1
           },
@@ -78,8 +79,6 @@ async createAndSendInvitation(email: string, file: Express.Multer.File, userId: 
     if (!invitation) {
       throw new HttpException('Invalid or expired token.', HttpStatus.NOT_FOUND);
     }
-
-
     if (invitation.status === 'CONFIRMED') {
       return { message: 'Your invitation has already been confirmed.' };
     }
@@ -89,6 +88,37 @@ async createAndSendInvitation(email: string, file: Express.Multer.File, userId: 
         where: { id: invitation.id },
         data: {
           status: 'CONFIRMED',
+        },
+      }),
+      this.prisma.user.update({
+        where: {
+          id: invitation.userId
+        },
+        data: {
+          confirm_inviation: { increment: 1 },
+          confirmation_token: null
+        }
+      })
+    ])
+   
+    return { message: 'Invitation confirmed successfully.' };
+  }
+  async cancel_invitation(token: string) {
+    const invitation = await this.prisma.invitation.findFirstOrThrow({
+      where: { invitationToken: token },
+    });
+    console.log(invitation);
+    if (!invitation) {
+      throw new HttpException('Invalid or expired token.', HttpStatus.NOT_FOUND);
+    }
+    if (invitation.status === 'CONFIRMED') {
+      return { message: 'Your invitation has already been confirmed.' };
+    }
+    const [invaitation_confirsm, update_confirm_invitation] = await Promise.all([
+      this.prisma.invitation.update({
+        where: { id: invitation.id },
+        data: {
+          status:Status.CANCELLED,
         },
       }),
       this.prisma.user.update({

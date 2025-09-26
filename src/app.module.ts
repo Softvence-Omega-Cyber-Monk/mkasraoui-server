@@ -24,6 +24,10 @@ import { OrderModule } from './module/order/order.module';
 import { FavoriteModule } from './module/favorite/favorite.module';
 import { BlogModule } from './module/blog/blog.module';
 import { ChatModule } from './module/chat/chat.module';
+import { NewsLetterModule } from './module/news-letter/news-letter.module';
+import { PlanModule } from './module/plan/plan.module';
+import { SubscriptionModule } from './module/subscription/subscription.module';
+import { ProviderPlanModule } from './module/provider-plan/provider-plan.module';
 
 @Module({
   imports: [
@@ -60,6 +64,10 @@ import { ChatModule } from './module/chat/chat.module';
     FavoriteModule,
     BlogModule,
     ChatModule,
+    NewsLetterModule,
+    PlanModule,
+    SubscriptionModule,
+    ProviderPlanModule,
     // PaymentModule
   ],
   controllers: [AppController],

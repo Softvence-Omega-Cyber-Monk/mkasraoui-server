@@ -18,7 +18,7 @@ export class MailService {
   }
 
   async sendMail(options: {
-    to: string;
+    to: string | string[];
     subject: string;
     html: string;
     from?: string;
@@ -28,7 +28,7 @@ export class MailService {
 
     try {
       const info = await this.transporter.sendMail({
-        from: from || `"No Reply" <${process.env.SMTP_USER}>`,
+        from:process.env.SMPT_FROM ,
         to,
         subject,
         html,

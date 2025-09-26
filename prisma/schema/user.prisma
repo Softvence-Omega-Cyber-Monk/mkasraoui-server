@@ -21,7 +21,7 @@ model User{
   Quote Quote[]
   favorite Favorite[]
   Order Order[]
-
+  subscription Subscription[]
   Cart Cart[]
   blog Blog[]
 
@@ -30,6 +30,7 @@ model User{
   providerConversations Conversation[] @relation("ProviderConversations")
 
   Message Message[]
+  stripe_customer_id String?
 }
 
 

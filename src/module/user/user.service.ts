@@ -13,10 +13,10 @@ import { join } from 'path';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // User requests to become a provider
-async requestProvider(
+  async requestProvider(
     userId: string,
     dto: any,
     files: Express.Multer.File[],
@@ -34,7 +34,7 @@ async requestProvider(
       throw new BadRequestException('You already sent a provider request');
 
     const imagePaths = files?.map((file) => buildFileUrl(file.filename)) || [];
- // Map and validate service categories
+    // Map and validate service categories
     const serviceCategories: ServiceCategory[] = dto.serviceCategory.map((c: string) => {
       const key = c.trim() as keyof typeof ServiceCategory;
       if (!(key in ServiceCategory)) {
@@ -107,176 +107,180 @@ async requestProvider(
 
 
   async getAllProviders(query: any) {
-  const {
-    isApproved,
-    page = 1,
-    limit = 10,
-    search,
-    serviceCategory,
-    serviceArea,
-    priceRange,
-  } = query;
+    const {
+      isApproved,
+      page = 1,
+      limit = 10,
+      search,
+      serviceCategory,
+      serviceArea,
+      priceRange,
+    } = query;
 
-  const where: any = {
-    ...(isApproved !== undefined && { isApproved: isApproved === 'true' }),
-    ...(serviceCategory && { serviceCategory: { has: serviceCategory } }),
-    ...(serviceArea && { serviceArea: { contains: serviceArea, mode: 'insensitive' } }),
-    ...(priceRange && { priceRange: { equals: priceRange } }),
-     ...(search && {
-    OR: [
-      { bussinessName: { contains: search, mode: 'insensitive' } },
-      { serviceArea: { contains: search, mode: 'insensitive' } },
-      {description:{contains:search,mode:'insensitive'}}
-    ],
-  }),
-  };
+    const where: any = {
+      ...(isApproved !== undefined && { isApproved: isApproved === 'true' }),
+      ...(serviceCategory && { serviceCategory: { has: serviceCategory } }),
+      ...(serviceArea && { serviceArea: { contains: serviceArea, mode: 'insensitive' } }),
+      ...(priceRange && { priceRange: { equals: priceRange } }),
+      ...(search && {
+        OR: [
+          { bussinessName: { contains: search, mode: 'insensitive' } },
+          { serviceArea: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } }
+        ],
+      }),
+    };
 
-  const skip = (Number(page) - 1) * Number(limit);
+    const skip = (Number(page) - 1) * Number(limit);
 
-  const [providers, total] = await this.prisma.$transaction([
-    this.prisma.providerProfile.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: Number(limit),
-      include: { user: true, reviews: true },
-    }),
-    this.prisma.providerProfile.count({ where }),
-  ]);
+    const [providers, total] = await this.prisma.$transaction([
+      this.prisma.providerProfile.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: Number(limit),
+        include: { user: true, reviews: true },
+      }),
+      this.prisma.providerProfile.count({ where }),
+    ]);
 
-  return {
-    data: providers,
-    pagination: {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / Number(limit)),
-    },
-  };
-}
-
-async getProviderById(id: string) {
-  const provider = await this.prisma.providerProfile.findUnique({
-    where: { id },
-    include: {
-      user: true,
-      reviews: true,
-    },
-  });
-
-  if (!provider) {
-    throw new NotFoundException('Provider not found');
+    return {
+      data: providers,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      },
+    };
   }
 
-  return provider;
-}
-
-async updateProviderProfile(
-  userId: string,
-  dto: any,
-  files: Express.Multer.File[],
-) {
-  const profile = await this.prisma.providerProfile.findUnique({
-    where: { userId },
-  });
-
-  if (!profile) throw new NotFoundException('Provider profile not found');
-  if (!profile.isApproved)
-    throw new BadRequestException('Cannot update unapproved profile');
-
-  // 1️⃣ Remove images
-  let updatedImages = profile.portfolioImages || [];
-  if (dto.removeImages && Array.isArray(dto.removeImages)) {
-    for (const url of dto.removeImages) {
-      try {
-        const filePath = join(process.cwd(), 'uploads', url.split('/').pop()!);
-        if (existsSync(filePath)) unlinkSync(filePath);
-      } catch (err) {
-        console.warn(`Failed to delete file: ${url}`, err.message);
-      }
-      updatedImages = updatedImages.filter((img) => img !== url);
-    }
-  }
-
-  // 2️⃣ Add new uploaded images
-  if (files && files.length > 0) {
-    const newImagePaths = files.map((file) => buildFileUrl(file.filename));
-    updatedImages = [...updatedImages, ...newImagePaths];
-  }
-
-  // 3️⃣ Validate service categories
-  let serviceCategories = profile.serviceCategory;
-  if (dto.serviceCategory) {
-    serviceCategories = dto.serviceCategory.map((c: string) => {
-      const key = c.trim().toUpperCase() as keyof typeof ServiceCategory;
-      if (!(key in ServiceCategory)) {
-        throw new BadRequestException(`Invalid service category: ${c}`);
-      }
-      return ServiceCategory[key];
+  async getProviderById(id: string) {
+    const provider = await this.prisma.providerProfile.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        reviews: true,
+      },
     });
+
+    if (!provider) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    return provider;
   }
 
-  // 4️⃣ Explicitly update only valid fields
-  const {
-    bussinessName,
-    email,
-    contactName,
-    phone,
-    serviceArea,
-    latitude,
-    longitude,
-    description,
-    priceRange,
-    website,
-    instagram,
-  } = dto;
+  async updateProviderProfile(
+    userId: string,
+    dto: any,
+    files: Express.Multer.File[],
+  ) {
+    const profile = await this.prisma.providerProfile.findUnique({
+      where: { userId },
+    });
 
-  return this.prisma.providerProfile.update({
-    where: { userId },
-    data: {
+    if (!profile) throw new NotFoundException('Provider profile not found');
+    if (!profile.isApproved)
+      throw new BadRequestException('Cannot update unapproved profile');
+
+    // 1️⃣ Remove images
+    let updatedImages = profile.portfolioImages || [];
+    if (dto.removeImages && Array.isArray(dto.removeImages)) {
+      for (const url of dto.removeImages) {
+        try {
+          const filePath = join(process.cwd(), 'uploads', url.split('/').pop()!);
+          if (existsSync(filePath)) unlinkSync(filePath);
+        } catch (err) {
+          console.warn(`Failed to delete file: ${url}`, err.message);
+        }
+        updatedImages = updatedImages.filter((img) => img !== url);
+      }
+    }
+
+    // 2️⃣ Add new uploaded images
+    if (files && files.length > 0) {
+      const newImagePaths = files.map((file) => buildFileUrl(file.filename));
+      updatedImages = [...updatedImages, ...newImagePaths];
+    }
+
+    // 3️⃣ Validate service categories
+    let serviceCategories = profile.serviceCategory;
+    if (dto.serviceCategory) {
+      serviceCategories = dto.serviceCategory.map((c: string) => {
+        const key = c.trim().toUpperCase() as keyof typeof ServiceCategory;
+        if (!(key in ServiceCategory)) {
+          throw new BadRequestException(`Invalid service category: ${c}`);
+        }
+        return ServiceCategory[key];
+      });
+    }
+
+    // 4️⃣ Explicitly update only valid fields
+    const {
       bussinessName,
       email,
       contactName,
       phone,
-      serviceCategory: serviceCategories,
       serviceArea,
-      latitude: Number(latitude),
-      longitude: Number(longitude),
+      latitude,
+      longitude,
       description,
       priceRange,
       website,
       instagram,
-      portfolioImages: updatedImages,
-    },
-  });
-}
+    } = dto;
+
+    return this.prisma.providerProfile.update({
+      where: { userId },
+      data: {
+        bussinessName,
+        email,
+        contactName,
+        phone,
+        serviceCategory: serviceCategories,
+        serviceArea,
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+        description,
+        priceRange,
+        website,
+        instagram,
+        portfolioImages: updatedImages,
+      },
+    });
+  }
 
 
 
-    async getMe(authUser: any) {
+  async getMe(authUser: any) {
     const user = await this.prisma.user.findUnique({
       where: { id: authUser.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        isDeleted: true,
+      include: {
+        subscription: true
       },
+
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    // 🚨 Compare JWT role with DB role
+    // Compare JWT role with DB role
     if (authUser.role !== user.role) {
       throw new UnauthorizedException(
         '"Your provider request has been approved. Please login again.',
       );
     }
+    const { password, ...safeUser } = user;
+    return safeUser;
+  }
 
-    return user;
+  async getAllUsers() {
+    const users = await this.prisma.user.findMany({
+      where: { role: Role.USER, isDeleted: false },
+      orderBy: { createdAt: 'desc' },
+    });
+    return users;
   }
 }

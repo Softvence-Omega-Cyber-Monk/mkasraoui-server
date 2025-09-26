@@ -2,9 +2,10 @@ model Product {
   id           String     @id @default(uuid())
   title        String
   description  String
-  product_type String
+  product_type ProductType @default(GIFT)
   age_range    String
   price        Float
+  discounted_price Float?
   included     String[]
   tutorial     String?
   imges        String[]
@@ -14,12 +15,11 @@ model Product {
   total_review Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  theme String @default("SUPERHERO")
   CartItem CartItem[]
-
+  up_to_kids Int?
   OrderItem OrderItem[]
   favorite Favorite[]
-
 }
 
 model Activity {
@@ -28,4 +28,22 @@ model Activity {
   description String
   productId   String
   product     Product  @relation(fields: [productId], references: [id])
+}
+
+enum ProductType {
+  GIFT
+  DIY_BOX
+}
+
+enum Theme {
+ SUPERHERO
+  SPACE
+  ART
+  SCIENCE
+  MUSIC
+  SPORTS
+  PRINCESS
+  DIONSOUR
+  UNICORNS
+  PIRATES
 }

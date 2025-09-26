@@ -77,7 +77,6 @@ export class InvitationsController {
       file,
       user.id,
     );
-
     return sendResponse(res, {
       statusCode: HttpStatus.CREATED,
       success: true,
@@ -91,13 +90,25 @@ export class InvitationsController {
     if (!token) {
       throw new HttpException('Token not provided.', HttpStatus.BAD_REQUEST);
     }
-
     const confirmedInvitation = await this.invitationsService.confirmInvitation(token);
-    
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
       success: true,
       message: 'Invitation confirmed successfully',
+      data: confirmedInvitation,
+    });
+  }
+
+  @Post('cancel')
+  async cancelInvitation(@Query('token') token: string, @Res() res: Response) {
+    if (!token) {
+      throw new HttpException('Token not provided.', HttpStatus.BAD_REQUEST);
+    }
+    const confirmedInvitation = await this.invitationsService.cancel_invitation(token);
+    return sendResponse(res, {
+      statusCode: HttpStatus.OK,
+      success: true,
+      message: 'Invitation cancel successfully',
       data: confirmedInvitation,
     });
   }
@@ -121,7 +132,6 @@ export class InvitationsController {
     if (!invitation) {
       throw new HttpException('Invitation not found', HttpStatus.NOT_FOUND);
     }
-    
     return sendResponse(res, {
       statusCode: HttpStatus.OK,
       success: true,
