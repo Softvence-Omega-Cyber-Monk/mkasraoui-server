@@ -9,6 +9,8 @@ model Subscription {
     user User @relation(fields: [user_id],references: [id])
     plan_id String?
     plan Plan? @relation(fields: [plan_id],references: [id])
+    provider_plan_id String?
+    provider_plan Provider_plan? @relation(fields: [provider_plan_id],references: [id])
 }
 enum Subscription_status {
     ACTIVE
