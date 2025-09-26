@@ -68,6 +68,14 @@ export class CreatePlanDto {
   @IsString()
   @IsOptional()
   price_id?:string;
+  @ApiProperty({
+    description: 'plan duration such as monthly or yearly.',
+    example: "MONTHLY",
+  })
+  @IsString()
+  @IsOptional()
+  plan_duration?:string;
+
 
 
 }

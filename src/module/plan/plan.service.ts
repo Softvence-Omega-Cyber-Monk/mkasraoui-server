@@ -16,7 +16,6 @@ export class PlanService {
 
    async create(createPlanDto:any): Promise<ResponseData<Plan>> {
     const { price_id, ...dataToCreate } = createPlanDto;
-    console.log(createPlanDto);
     
     const data: Prisma.PlanCreateInput = {
       ...dataToCreate,
