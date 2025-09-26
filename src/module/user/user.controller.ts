@@ -263,8 +263,7 @@ async updateProviderProfile(
     dto = JSON.parse(data);
   } catch (err) {
     throw new BadRequestException('Invalid JSON in data field');
-  }
-
+  } 
   const result = await this.userService.updateProviderProfile(req.user!.id, dto, files);
 
   return sendResponse(res, {
