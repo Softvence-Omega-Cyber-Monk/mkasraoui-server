@@ -18,7 +18,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDTO, ProductFilterDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import {
-  FileFieldsInterceptor, // CHANGED: Imported FileFieldsInterceptor
+  FileFieldsInterceptor,
 } from '@nestjs/platform-express';
 import {
   ApiBody,
@@ -208,7 +208,7 @@ export class ProductsController {
       return sendResponse(res, {
         statusCode: HttpStatus.BAD_REQUEST,
         success: false,
-        message: 'Failed to retrieve data',
+        message: err.message || 'Failed to retrieve data',
         data: null,
       });
     }
@@ -304,7 +304,7 @@ export class ProductsController {
       return sendResponse(res, {
         statusCode: HttpStatus.BAD_REQUEST,
         success: false,
-        message: 'Failed to delete product',
+        message: err.message || 'Failed to delete product',
         data: null,
       });
     }
