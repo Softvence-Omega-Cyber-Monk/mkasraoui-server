@@ -22,7 +22,6 @@ model User{
   favorite Favorite[]
   Order Order[]
   subscription Subscription[]
-  Cart Cart[]
   blog Blog[]
 
   userConversations Conversation[] @relation("UserConversations")

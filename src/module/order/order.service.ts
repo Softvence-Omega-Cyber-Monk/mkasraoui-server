@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { Request } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -11,75 +12,76 @@ export class OrderService {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2022-11-15' as any });
   }
 
-  /** Create an order and return Stripe Checkout URL */
-  async createCheckout(
-    userId: string,
-    shippingInfo: { shippingAddress: string; contactName: string; contactPhone: string },
-  ) {
-    // 1️⃣ Get user's cart
-    const cart = await this.prisma.cart.findUnique({
-      where: { userId },
-      include: {
-        items: { include: { product: true } },
-      },
-    });
+/** Create an order and return Stripe Checkout URL */
+async createCheckout(
+  userId: string,
+  body: CreateOrderDto,
+) {
+  const { items, totalPrice, shippingFee, shippingInfo, additionalNotes } = body;
 
-    if (!cart || cart.items.length === 0) {
-      throw new BadRequestException('Cart is empty');
-    }
-
-    // 2️⃣ Calculate total
-    const total = cart.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-
-    // 3️⃣ Create order in database
-    const order = await this.prisma.order.create({
-      data: {
-        userId,
-        total,
-        status: 'PENDING',
-        shippingAddress: shippingInfo.shippingAddress,
-        contactName: shippingInfo.contactName,
-        contactPhone: shippingInfo.contactPhone,
-        items: {
-          create: cart.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.product.price,
-          })),
-        },
-      },
-      include: {
-        items: { include: { product: true } },
-        user: true,
-      },
-    });
-
-    // 4️⃣ Create Stripe Checkout Session
-    const session = await this.stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: cart.items.map((item) => ({
-        price_data: {
-          currency: 'usd',
-          product_data: { name: item.product.title },
-          unit_amount: Math.round(item.product.price * 100),
-        },
-        quantity: item.quantity,
-      })),
-      mode: 'payment',
-      customer_email:order.user.email,
-      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
-      metadata: {
-        orderId: order.id,
-        userId,
-      },
-    });
-
-    // 5️⃣ Clear cart
-    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-
-    return { order, checkoutUrl: session.url };
+  if (!items || items.length === 0) {
+    throw new BadRequestException('No items provided');
   }
+
+  // 1️⃣ Validate products exist
+  const productIds = items.map((i) => i.productId);
+  const products = await this.prisma.product.findMany({
+    where: { id: { in: productIds } },
+  });
+
+  if (products.length !== items.length) {
+    throw new BadRequestException('Some products are invalid');
+  }
+
+  // 2️⃣ Create Order in DB
+  const order = await this.prisma.order.create({
+    data: {
+      userId,
+      total: totalPrice, // ✅ frontend-sent total (items + shipping)
+      status: 'PENDING',
+      shippingAddress: JSON.stringify(shippingInfo),
+      contactName: shippingInfo.name,
+      contactPhone: shippingInfo.phone,
+      items: {
+        create: items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity
+         
+        })),
+      },
+    },
+    include: { items: { include: { product: true } }, user: true },
+  });
+
+  // 3️⃣ Create Stripe Checkout Session (Single total line item)
+  const session = await this.stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'eur',
+          product_data: { name: `Order #${order.id}` }, // ✅ Single line item label
+          unit_amount: Math.round(totalPrice * 100), // ✅ total (items + shipping)
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    customer_email: shippingInfo.email,
+    success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+    metadata: {
+      orderId: order.id,
+      userId,
+      additionalNotes: additionalNotes || '',
+      shippingFee: shippingFee.toString(),
+    },
+  });
+
+  return { order, checkoutUrl: session.url };
+}
+
+
 
   /** Get all orders for a user with pagination */
 async getUserOrders(userId: string, page: number, limit: number) {
