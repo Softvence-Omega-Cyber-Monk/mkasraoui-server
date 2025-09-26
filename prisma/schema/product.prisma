@@ -5,6 +5,7 @@ model Product {
   product_type ProductType @default(GIFT)
   age_range    String
   price        Float
+  discounted_price Float?
   included     String[]
   tutorial     String?
   imges        String[]
