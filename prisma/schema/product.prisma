@@ -16,7 +16,6 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   theme String @default("SUPERHERO")
-  CartItem CartItem[]
   up_to_kids Int?
   OrderItem OrderItem[]
   favorite Favorite[]
