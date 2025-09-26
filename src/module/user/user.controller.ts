@@ -306,7 +306,7 @@ async updateProviderProfile(
 
 
   @Patch()
-@ApiConsumes('multipart/form-data') // 1. Set content type for file uploads
+@ApiConsumes('multipart/form-data')
 @ApiOperation({ summary: 'Update user details (name, phone, and optional profile image).' })
 @ApiBody({
   schema: {
@@ -322,11 +322,9 @@ async updateProviderProfile(
         description: 'New user phone number.',
         example: '+1234567890',
       },
-      // Multer only allows one file field to be defined in FilesInterceptor.
-      // We assume 'files' contains the profile image.
       files: {
         type: 'array',
-        maxItems: 1, // Restrict to one file for a profile picture
+        maxItems: 1,
         items: {
           type: 'string',
           format: 'binary',
@@ -334,7 +332,6 @@ async updateProviderProfile(
         description: 'Optional new profile image file (up to 1).',
       },
     },
-    // You can make fields optional for a PATCH request
     required: [], 
   },
 })
@@ -357,11 +354,8 @@ async updateUser(
   @Body() body: { name?: string; phone?: string },
   @UploadedFiles() files: Array<Express.Multer.File>,
 ) {
-  // Extract the single file if present
  try{
    const profileImageFile = files && files.length > 0 ? files[0] : null;
-
-  // Prepare data for the service
   const updateData = {
     ...body,
     profileImage: profileImageFile, 
