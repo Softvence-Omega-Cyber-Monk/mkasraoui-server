@@ -13,10 +13,11 @@ export class SubscriptionService {
   async create_subscription(createSubscriptionDto: CreateSubscriptionDto, userId: string) {
     const { priceId, pland_id } = createSubscriptionDto;
 
-    const [isPlanExist, is_alrady_use_same_plan, user] = await Promise.all([
+    const [isPlanExist, is_alrady_use_same_plan, user,prodvider_plan] = await Promise.all([
       this.prisma.plan.findUnique({
         where: { id: pland_id }
       }),
+   
       this.prisma.subscription.findFirst({
         where: {
           user_id: userId,
@@ -26,15 +27,18 @@ export class SubscriptionService {
       this.prisma.user.findUnique({
         where: { id: userId },
         select: { stripe_customer_id: true, email: true }
-      })
+      }),
+         this.prisma.provider_plan.findUnique({
+        where: { id: pland_id }
+      }),
     ]);
 
     // ------------------ Validation Checks----------------------- ---
     if (!user) {
       throw new HttpException("User not found", 404);
-    } else if (!isPlanExist) {
+    } else if (!isPlanExist && !prodvider_plan) {
       throw new HttpException("Plan does not exist", 404);
-    } else if (!isPlanExist.is_active) {
+    } else if (isPlanExist && !isPlanExist.is_active) {
       throw new HttpException("Plan is not active", HttpStatus.BAD_REQUEST);
     } else if (is_alrady_use_same_plan) {
       throw new HttpException("You are already subscribed to this plan", HttpStatus.BAD_REQUEST);
@@ -68,7 +72,7 @@ export class SubscriptionService {
       client_reference_id: userId,
       subscription_data: {
         metadata: {
-          plan_id: isPlanExist.id,
+          plan_id: (isPlanExist || prodvider_plan)?.id || '',
           user_id: userId
         }
       },

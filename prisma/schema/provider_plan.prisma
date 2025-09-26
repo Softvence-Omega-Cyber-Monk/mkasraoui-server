@@ -1,0 +1,12 @@
+model Provider_plan {
+    id String @id @default(uuid())
+    name String
+    features String[]
+    price_id String?
+    price Float
+    is_active Boolean
+    subscription Subscription[]
+    plan_duration String?
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+}
