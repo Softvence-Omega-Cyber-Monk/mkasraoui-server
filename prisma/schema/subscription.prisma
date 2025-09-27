@@ -11,6 +11,7 @@ model Subscription {
     plan Plan? @relation(fields: [plan_id],references: [id])
     provider_plan_id String?
     provider_plan Provider_plan? @relation(fields: [provider_plan_id],references: [id])
+    price Float? @default(0)
 }
 enum Subscription_status {
     ACTIVE

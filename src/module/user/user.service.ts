@@ -304,7 +304,7 @@ async approveProviderRequest(requestId: string) {
 
   async getAllUsers() {
     const users = await this.prisma.user.findMany({
-      where: { role: Role.USER, isDeleted: false },
+      where: {isDeleted: false },
       orderBy: { createdAt: 'desc' },
     });
     return users;

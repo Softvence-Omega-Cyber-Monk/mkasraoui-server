@@ -6,8 +6,6 @@ import {
 } from '@nestjs/common';
 import { QuoteStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-
-
 @Injectable()
 export class QuoteService {
   constructor(private prisma: PrismaService) {}
