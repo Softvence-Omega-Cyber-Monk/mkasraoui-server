@@ -4,7 +4,6 @@ import Stripe from 'stripe';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { SubscriptionMailTemplatesService } from '../mail/subscription.mail';
-import { start } from 'repl';
 
 @Injectable()
 export class SubscriptionService {
@@ -156,6 +155,7 @@ export class SubscriptionService {
                 start_data: new Date(),
                 end_date: endData,
                 plan_name: plan?.name,
+                price: plan?.price
               },
               include: { plan: true, user: true }
             });

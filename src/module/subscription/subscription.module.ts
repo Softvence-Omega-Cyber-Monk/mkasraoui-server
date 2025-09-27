@@ -3,7 +3,6 @@ import { SubscriptionService } from './subscription.service';
 import { SubscriptionController } from './subscription.controller';
 import { SubscriptionMailTemplatesService } from '../mail/subscription.mail';
 import { MailService } from '../mail/mail.service';
-import { MailModule } from '../mail/mail.module';
 
 @Module({
   controllers: [SubscriptionController],
