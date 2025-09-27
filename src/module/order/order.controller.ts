@@ -6,7 +6,8 @@ import {
   Body,
   Param,
   Req,
-  Res
+  Res,
+  InternalServerErrorException
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import sendResponse from 'src/module/utils/sendResponse';
@@ -31,13 +32,20 @@ export class OrderController {
     @Body() body:CreateOrderDto,
     @Res() res: ExpressResponse,
   ) {
-    const result = await this.orderService.createCheckout(req.user!.id, body);
+    try {
+  const result = await this.orderService.createCheckout(req.user!.id, body);
     return sendResponse(res, {
       statusCode: 201,
       success: true,
       message: 'Order created successfully',
       data: result,
     });
+} catch (error) {
+  console.error("Order creation error:", error);
+  throw new InternalServerErrorException(error.message);
+}
+
+    
   }
 
  /** GET ORDERS FOR CURRENT USER */
