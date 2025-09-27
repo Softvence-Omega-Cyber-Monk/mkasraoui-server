@@ -11,11 +11,17 @@ import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import { profile } from 'console';
 import { buildFileUrl } from 'src/helper/urlBuilder';
+import { MailService } from '../mail/mail.service';
+import { MailTemplatesService } from '../mail/invitationFormat';
 
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+    private mailTemplatesService:MailTemplatesService
+  ) { }
 
   // User requests to become a provider
   async requestProvider(
@@ -67,31 +73,49 @@ export class UserService {
     return result;
   }
 
-  // Admin approves provider request
-  async approveProviderRequest(requestId: string) {
-    // Fetch the request
-    const isExist = await this.prisma.providerProfile.findUnique({
-      where: { id: requestId },
-    });
-    if (!isExist) throw new NotFoundException('Request not found');
+ // Admin approves provider request
+async approveProviderRequest(requestId: string) {
+  // Fetch the request
+  const request = await this.prisma.providerProfile.findUnique({
+    where: { id: requestId },
+    include: { user: true }, // include user to get email and name
+  });
+  if (!request) throw new NotFoundException('Request not found');
 
-    // Create provider profile
-    const provider = await this.prisma.providerProfile.update({
-      where: {
-        id: requestId,
-      },
-      data: {
-        isApproved: true,
-      },
-    });
-    // Update user role
-    await this.prisma.user.update({
-      where: { id: isExist.userId },
-      data: { role: Role.PROVIDER },
+  // Approve provider profile
+  const provider = await this.prisma.providerProfile.update({
+    where: { id: requestId },
+    data: { isApproved: true },
+  });
+
+  // Update user role
+  const updatedUser = await this.prisma.user.update({
+    where: { id: request.userId },
+    data: { role: Role.PROVIDER },
+  });
+
+  // Send approval email
+  try {
+    const dashboardLink = `${process.env.FRONTEND_URL}/provider/dashboard`;
+    const htmlContent = await this.mailTemplatesService.getProviderApprovalTemplate(
+      updatedUser.name!,
+      dashboardLink
+    );
+
+    await this.mailService.sendMail({
+      to: updatedUser.email,
+      subject: 'Your Provider Request Has Been Approved!',
+      html: htmlContent,
     });
 
-    return provider;
+    console.log(`Approval email sent to ${updatedUser.email}`);
+  } catch (err) {
+    console.error('Failed to send approval email:', err);
+    // optionally continue without failing the main request
   }
+
+  return provider;
+}
 
   // Admin rejects provider request
   async rejectProviderRequest(requestId: string) {

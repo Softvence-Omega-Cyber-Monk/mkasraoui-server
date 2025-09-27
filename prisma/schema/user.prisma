@@ -31,6 +31,8 @@ model User{
   Message Message[]
   stripe_customer_id String?
   profile_image String?
+
+  CustomOrder CustomOrder[]
 }
 
 

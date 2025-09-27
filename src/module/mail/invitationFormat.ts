@@ -81,4 +81,49 @@ export class MailTemplatesService {
     
     return htmlContent;
   }
+
+
+async getProviderApprovalTemplate(userName: string, dashboardLink: string): Promise<string> {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Provider Approved</title>
+<style>
+  body { margin:0; padding:0; font-family:Arial, sans-serif; background-color:#fef6f9; }
+  .container { width:100%; padding:20px; }
+  .email-card { max-width:650px; margin:0 auto; background:#ffffff; border-radius:16px; overflow:hidden; border:1px solid #f0f0f0; }
+  .header { background:#f67280; padding:40px 20px; text-align:center; color:#fff; }
+  .header h1 { margin:0; font-size:28px; }
+  .content { padding:30px 20px; text-align:center; color:#333; }
+  .content p { font-size:16px; margin-bottom:20px; }
+  .btn { display:inline-block; background-color:#c06c84; color:#fff; padding:12px 24px; text-decoration:none; font-weight:bold; border-radius:8px; }
+  .footer { font-size:12px; color:#888; text-align:center; padding:20px; background:#f9f9f9; }
+  .balloons { margin:20px 0; }
+  .balloons img { width:60px; margin:0 5px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="email-card">
+      <div class="header">
+        <h1>🎉 You're Approved! 🎉</h1>
+      </div>
+
+      <div class="content">
+        <p>Hi <strong>${userName}</strong>,</p>
+        <p>Congratulations! Your request to become a <strong>Provider</strong> has been approved by our admin team.</p>
+        <p>You now have access to all provider features.</p>
+        <a href="${dashboardLink}" class="btn">Go to My Dashboard</a>
+        <p>We’re thrilled to celebrate this moment with you!</p>
+      </div>
+      <div class="footer">© 2025 Your Company. All rights reserved.</div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+
 }
