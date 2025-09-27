@@ -8,10 +8,14 @@ model Order {
   status    OrderStatus @default(PENDING)
   
   // Additional info
-  shippingAddress String?          // Address for delivery
+   address String?          // Address for delivery
+   zipCode  String?
+   state   String?
+   city    String?
   contactName     String?          // Name to receive delivery
   contactPhone    String?          // Phone for delivery
-  
+  additionalNotes  String?
+  shippingFee      Float @default(0)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }

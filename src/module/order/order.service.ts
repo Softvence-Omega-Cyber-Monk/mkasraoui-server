@@ -39,9 +39,14 @@ async createCheckout(
       userId,
       total: totalPrice, // ✅ frontend-sent total (items + shipping)
       status: 'PENDING',
-      shippingAddress: JSON.stringify(shippingInfo),
+      address:shippingInfo.address,
+      city:shippingInfo.city,
+      zipCode:shippingInfo.zipCode,
+      state:shippingInfo.state,
       contactName: shippingInfo.name,
       contactPhone: shippingInfo.phone,
+      shippingFee:body.shippingFee,
+      additionalNotes:body.additionalNotes,
       items: {
         create: items.map((i) => ({
           productId: i.productId,
