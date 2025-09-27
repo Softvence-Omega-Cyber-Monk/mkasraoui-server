@@ -27,6 +27,7 @@ import { NewsLetterModule } from './module/news-letter/news-letter.module';
 import { PlanModule } from './module/plan/plan.module';
 import { SubscriptionModule } from './module/subscription/subscription.module';
 import { ProviderPlanModule } from './module/provider-plan/provider-plan.module';
+import { SubscriptionMailTemplatesService } from './module/mail/subscription.mail';
 
 @Module({
   imports: [

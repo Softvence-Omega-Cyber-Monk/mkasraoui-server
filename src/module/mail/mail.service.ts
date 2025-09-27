@@ -9,7 +9,7 @@ export class MailService {
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: true,
+      secure: process.env.SMTP_SECURE === 'true' || Number(process.env.SMTP_PORT) === 465, 
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -28,7 +28,7 @@ export class MailService {
 
     try {
       const info = await this.transporter.sendMail({
-        from:process.env.SMPT_FROM ,
+        from: from || process.env.SMTP_FROM || process.env.EMAIL_USER, 
         to,
         subject,
         html,
