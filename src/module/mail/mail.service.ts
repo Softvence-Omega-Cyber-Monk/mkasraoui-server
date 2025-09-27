@@ -28,7 +28,7 @@ export class MailService {
 
     try {
       const info = await this.transporter.sendMail({
-        from: from || process.env.SMTP_FROM || process.env.EMAIL_USER, 
+        from:process.env.SMTP_FROM || process.env.EMAIL_USER, 
         to,
         subject,
         html,
