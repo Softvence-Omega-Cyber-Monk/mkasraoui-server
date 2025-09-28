@@ -9,7 +9,6 @@ import { Role, ServiceCategory } from '@prisma/client';
 
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
-import { profile } from 'console';
 import { buildFileUrl } from 'src/helper/urlBuilder';
 import { MailService } from '../mail/mail.service';
 import { MailTemplatesService } from '../mail/invitationFormat';
@@ -96,7 +95,7 @@ async approveProviderRequest(requestId: string) {
 
   // Send approval email
   try {
-    const dashboardLink = `${process.env.FRONTEND_URL}/provider/dashboard`;
+    const dashboardLink = `${process.env.CLIENT_URL}/provider/dashboard`;
     const htmlContent = await this.mailTemplatesService.getProviderApprovalTemplate(
       updatedUser.name!,
       dashboardLink

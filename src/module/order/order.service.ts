@@ -17,6 +17,14 @@ async createCheckout(
   userId: string,
   body: CreateOrderDto,
 ) {
+
+  const isUserExist = await this.prisma.user.findUnique({
+    where:{id:userId}
+  })
+  if(!isUserExist){
+    throw new BadRequestException('user does not exist!');
+  }
+
   const { items, totalPrice, shippingFee, shippingInfo, additionalNotes } = body;
 
   if (!items || items.length === 0) {
@@ -72,7 +80,7 @@ async createCheckout(
       },
     ],
     mode: 'payment',
-    customer_email: shippingInfo.email,
+    customer_email: isUserExist.email,
     success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.FRONTEND_URL}/cancel`,
     metadata: {
