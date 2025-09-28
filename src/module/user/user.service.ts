@@ -131,7 +131,19 @@ async approveProviderRequest(requestId: string) {
   }
 
 
+async deleteUser(userId:string){
+  const isUserExist = await this.prisma.user.update({
+    where:{
+    id:userId
+    },
+    data:{
+    isDeleted:true
+    }
+  })
+  if(!isUserExist) throw new BadRequestException("The user not found!")
 
+  return isUserExist
+}
 
 
   async getAllProviders(query: any) {
