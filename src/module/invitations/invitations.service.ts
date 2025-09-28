@@ -166,7 +166,7 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string, g
   }
 
   find_by_party(id: string, userId: string) {
-    return this.prisma.invitation.findFirst({ where: {
+    return this.prisma.invitation.findMany({ where: {
       party_id: id,
       userId: userId
     } });
