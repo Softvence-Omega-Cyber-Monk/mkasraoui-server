@@ -45,4 +45,5 @@ enum Theme {
   DIONSOUR
   UNICORNS
   PIRATES
+  JUNGLE
 }

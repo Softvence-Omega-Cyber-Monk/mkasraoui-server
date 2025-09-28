@@ -4,17 +4,28 @@ model CustomOrder {
   user      User        @relation(fields: [userId], references: [id])
 
   tShirtType    TShirtType 
-
-
-
+  size      String
+  gender    Gender
+  color     String
+  Age       String
+  theme     Theme?
+  name      String
+  age       String
+  optionalMessage  String?
+  quantity   Int
+  shippingFee  Float
+  designUrl    String?
+  mockupUrl    String?
   total     Float
-  paymentIntentId  String?        // Stripe payment ID
+  paymentIntentId  String?     
   status    OrderStatus @default(PENDING)
   
-  // Additional info
-  shippingAddress String?          // Address for delivery
-  contactName     String?          // Name to receive delivery
-  contactPhone    String?          // Phone for delivery
+  address String?          // Address for delivery
+  zipCode  String?
+  state   String?
+  city    String?       
+  contactName     String?          
+  contactPhone    String?         
   
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
@@ -26,3 +37,8 @@ enum TShirtType {
     ADULT
 }
 
+
+enum Gender {
+    MALE
+    FEMALE
+}

@@ -30,6 +30,7 @@ import { ProviderPlanModule } from './module/provider-plan/provider-plan.module'
 import { SubscriptionMailTemplatesService } from './module/mail/subscription.mail';
 import { AdminModule } from './module/admin/admin.module';
 import { ChecklistModule } from './module/checklist/checklist.module';
+import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { ChecklistModule } from './module/checklist/checklist.module';
     ProviderPlanModule,
     AdminModule,
     ChecklistModule,
+    CustomTshirtModule,
     // PaymentModule
   ],
   controllers: [AppController],
