@@ -51,19 +51,15 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string) {
                     image: imageUrl, 
                 },
             });
-            console.log(newInvitation);
-            
+
             const confirmationLink = `${process.env.CLIENT_URL}/invitations/confirm?token=${token}`;
-            console.log(confirmationLink);
             
-            // 2. ✅ Pass the CID source to the template
             const htmlContent = await this.mailTemplatesService.getInvitationTemplate(
-                `cid:${fileCid}`, // 👈 Template now receives the CID string
+                `cid:${fileCid}`,
                 confirmationLink
             );
 
             const [emailResult, userUpdateResult] = await Promise.all([
-                // 3. ✅ Re-introduced the attachments array
                 this.mailService.sendMail({
                     to: email,
                     subject: 'Please Confirm Your Invitation',
@@ -71,7 +67,7 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string) {
                     attachments: [{
                         filename: originalFilename,
                         content: fileContent,
-                        cid: fileCid, // 👈 Links the attachment buffer to the HTML <img> tag
+                        cid: fileCid,
                     }],
                 }),
                 this.prisma.user.update({

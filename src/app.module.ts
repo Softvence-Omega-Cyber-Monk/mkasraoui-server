@@ -29,6 +29,7 @@ import { SubscriptionModule } from './module/subscription/subscription.module';
 import { ProviderPlanModule } from './module/provider-plan/provider-plan.module';
 import { SubscriptionMailTemplatesService } from './module/mail/subscription.mail';
 import { AdminModule } from './module/admin/admin.module';
+import { ChecklistModule } from './module/checklist/checklist.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { AdminModule } from './module/admin/admin.module';
     SubscriptionModule,
     ProviderPlanModule,
     AdminModule,
+    ChecklistModule,
     // PaymentModule
   ],
   controllers: [AppController],
