@@ -36,6 +36,11 @@ import { AdminModule } from './module/admin/admin.module';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
+     ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/', 
+      renderPath: '/',
+    }),
     MailerModule.forRoot({
       transport: {
         service: 'gmail',

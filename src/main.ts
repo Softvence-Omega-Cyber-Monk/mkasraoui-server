@@ -17,7 +17,7 @@ async function bootstrap() {
     rawBody: true,
     bodyParser: true,
   });
-
+const publicDir = join(process.cwd(), 'public');
   // Ensure uploads folder exists
   const uploadsDir = join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
@@ -27,14 +27,14 @@ async function bootstrap() {
 
   // Serve uploads statically
   app.use('/uploads', express.static(uploadsDir));
+  app.use('/', express.static(publicDir));
 
   app.enableCors({
     origin: ['http://localhost:5173'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-
-
+  
    // ✅ Stripe webhook: keep raw body
   app.use(
     '/payments/webhook',
