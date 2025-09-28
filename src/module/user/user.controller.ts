@@ -389,4 +389,21 @@ async updateUser(
   throw new BadRequestException('Invalid input or file upload error.');
  }
 }
+
+
+/** GET SINGLE PROVIDER */
+@Delete('delete-user/:id')
+@Roles(Role.ADMIN)
+@ApiOperation({ summary: 'Delete user by ID' })
+async deleteUser(@Param('id') id: string, @Res() res: any) {
+  const result = await this.userService.deleteUser(id);
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Provider delete successfully',
+    data: result,
+  });
+}
+
+
 }
