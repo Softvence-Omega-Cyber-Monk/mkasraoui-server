@@ -14,12 +14,16 @@ model CustomOrder {
   optionalMessage  String?
   quantity   Int
   shippingFee  Float
-
+  designUrl    String?
+  mockupUrl    String?
   total     Float
   paymentIntentId  String?     
   status    OrderStatus @default(PENDING)
   
-  shippingAddress String?          
+  address String?          // Address for delivery
+  zipCode  String?
+  state   String?
+  city    String?       
   contactName     String?          
   contactPhone    String?         
   
