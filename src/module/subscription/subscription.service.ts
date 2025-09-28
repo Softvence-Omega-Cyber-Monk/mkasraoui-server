@@ -14,7 +14,7 @@ export class SubscriptionService {
   }
   async create_subscription(createSubscriptionDto: CreateSubscriptionDto, userId: string) {
     const { priceId, pland_id } = createSubscriptionDto;
-
+    
     // 1. Initial Data Fetch (Your existing Promise.all)
     const [isPlanExist, is_alrady_use_same_plan, user, prodvider_plan] = await Promise.all([
       this.prisma.plan.findUnique({
@@ -71,8 +71,8 @@ export class SubscriptionService {
           quantity: 1,
         }],
         mode: price.recurring ? 'subscription' : 'payment',
-        success_url: process.env.CLIENT_URL_SUCCESSFUL as string,
-        cancel_url: process.env.CLIENT_URL_CANCEL as string,
+        success_url: `${process.env.CLIENT_URL}/success` as string,
+        cancel_url: `${process.env.CLIENT_URL}/cancel`  as string,
         client_reference_id: userId,
         subscription_data: {
           metadata: {

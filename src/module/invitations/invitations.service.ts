@@ -5,9 +5,8 @@ import { randomBytes } from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { MailTemplatesService } from '../mail/invitationFormat';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { Status } from '@prisma/client';
+import axios from 'axios';
 @Injectable()
 export class InvitationsService {
   constructor(
@@ -16,61 +15,85 @@ export class InvitationsService {
     private mailTemplatesService: MailTemplatesService
   ) { }
 
-async createAndSendInvitation(email: string, file: Express.Multer.File, userId: string) {
-  const token = randomBytes(32).toString('hex');
-  const fileCid = 'invitation-image';
-  const fileContent = readFileSync(join(process.cwd(), file.path));
+async createAndSendInvitation(email: string, imageUrl: string, userId: string) {
+        const token = randomBytes(32).toString('hex');
+        const fileCid = 'invitation-image'; // Unique Content ID for the image
 
-  try {
-    const newInvitation = await this.prisma.invitation.create({
-      data: {
-        email,
-        invitationToken: token,
-        status: 'PENDING',
-        userId: userId,
-        image: fileCid,
-      },
-    });
-    console.log(newInvitation);
-    const confirmationLink = `${process.env.CLIENT_URL}/invitations/confirm?token=${token}`;
-    console.log(confirmationLink);
-    const htmlContent = await this.mailTemplatesService.getInvitationTemplate(
-      fileCid, 
-      confirmationLink
-    );
+        let fileContent: Buffer;
+        let originalFilename: string;
 
-    const [emailResult, userUpdateResult] = await Promise.all([
-      this.mailService.sendMail({
-        to: email,
-        subject: 'Please Confirm Your Invitation',
-        html: htmlContent,
-        attachments: [{
-          filename: file.originalname,
-          content: fileContent,
-          cid: fileCid,
-        }, ],
-      }),
-      this.prisma.user.update({
-        where: {
-          id: userId
-        },
-        data: {
-          confirmation_token: token,
-          invitation_send: {
-            increment: 1
-          },
-        },
-      }),
-    ]);
-    return newInvitation;
-  } catch (error) {
-    if (error.code === 'P2002') {
-      throw new HttpException('An invitation with this email already exists.', HttpStatus.CONFLICT);
+        // 1. ✅ Re-introduced image fetching logic
+        try {
+            const response = await axios.get(imageUrl, {
+                responseType: 'arraybuffer',
+            });
+
+            fileContent = response.data;
+            
+            // Simple logic to get filename and ensure extension exists
+            const urlParts = new URL(imageUrl).pathname.split('/');
+            originalFilename = urlParts.pop() || 'invitation.jpg'; 
+            if (!originalFilename.includes('.')) {
+                originalFilename += '.jpg'; 
+            }
+        } catch (fetchError) {
+            console.error('Failed to fetch image:', fetchError.message);
+            throw new HttpException('Failed to fetch image from the provided URL.', HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            const newInvitation = await this.prisma.invitation.create({
+                data: {
+                    email,
+                    invitationToken: token,
+                    status: 'PENDING',
+                    userId: userId,
+                    image: imageUrl, 
+                },
+            });
+
+            const confirmationLink = `${process.env.CLIENT_URL}/invitations/confirm?token=${token}`;
+            
+            const htmlContent = await this.mailTemplatesService.getInvitationTemplate(
+                `cid:${fileCid}`,
+                confirmationLink
+            );
+
+            const [emailResult, userUpdateResult] = await Promise.all([
+                this.mailService.sendMail({
+                    to: email,
+                    subject: 'Please Confirm Your Invitation',
+                    html: htmlContent,
+                    attachments: [{
+                        filename: originalFilename,
+                        content: fileContent,
+                        cid: fileCid,
+                    }],
+                }),
+                this.prisma.user.update({
+                    where: {
+                        id: userId
+                    },
+                    data: {
+                        confirmation_token: token,
+                        invitation_send: {
+                            increment: 1
+                        },
+                    },
+                }),
+            ]);
+            
+            console.log('Invitation created and email sent. Email ID:', emailResult.messageId);
+            return newInvitation;
+        } catch (error) {
+            console.error('Error in createAndSendInvitation:', error);
+            
+            if (error.code === 'P2002') {
+                throw new HttpException('An invitation with this email already exists.', HttpStatus.CONFLICT);
+            }
+            throw new HttpException('Failed to create and send invitation.', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    throw new HttpException('Failed to create invitation.', HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-}
-
   async confirmInvitation(token: string) {
     const invitation = await this.prisma.invitation.findFirstOrThrow({
       where: { invitationToken: token },

@@ -23,6 +23,7 @@ model User{
   Order Order[]
   subscription Subscription[]
   blog Blog[]
+  task Task[]
 
   userConversations Conversation[] @relation("UserConversations")
 

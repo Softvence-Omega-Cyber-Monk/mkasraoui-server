@@ -15,8 +15,13 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should call getWelcomePage', () => {
+      const mockRes = {
+        sendFile: jest.fn()
+      } as any;
+      
+      appController.getWelcomePage(mockRes);
+      expect(mockRes.sendFile).toHaveBeenCalled();
     });
   });
 });

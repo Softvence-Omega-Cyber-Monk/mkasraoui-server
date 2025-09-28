@@ -29,6 +29,7 @@ import { SubscriptionModule } from './module/subscription/subscription.module';
 import { ProviderPlanModule } from './module/provider-plan/provider-plan.module';
 import { SubscriptionMailTemplatesService } from './module/mail/subscription.mail';
 import { AdminModule } from './module/admin/admin.module';
+import { ChecklistModule } from './module/checklist/checklist.module';
 import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module';
 
 @Module({
@@ -36,6 +37,11 @@ import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module'
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
+    }),
+     ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/', 
+      renderPath: '/',
     }),
     MailerModule.forRoot({
       transport: {
@@ -70,6 +76,7 @@ import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module'
     SubscriptionModule,
     ProviderPlanModule,
     AdminModule,
+    ChecklistModule,
     CustomTshirtModule,
     // PaymentModule
   ],
