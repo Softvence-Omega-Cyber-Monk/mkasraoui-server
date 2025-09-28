@@ -131,6 +131,9 @@ async approveProviderRequest(requestId: string) {
   }
 
 
+
+
+
   async getAllProviders(query: any) {
     const {
       isApproved,
@@ -276,6 +279,39 @@ async approveProviderRequest(requestId: string) {
     });
   }
 
+
+  async providerMetaData(userId:string){
+    const user = await this.prisma.user.findUnique({
+      where:{
+        id:userId,
+        role:Role.PROVIDER
+      },
+      include:{
+        providerProfile:true
+      }
+    })
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const totalBookings =await this.prisma.quote.count({ where: { providerId:user.providerProfile?.id } })
+
+    const totalReview = await this.prisma.providerReview.count({
+      where:{
+        providerId:user.providerProfile?.id
+      }
+    })
+
+    const avgRating = user.providerProfile?.avg_ratting;
+
+
+    return {
+    totalBookings,totalReview,avgRating
+    }
+    
+
+  }
 
 
   async getMe(authUser: any) {
