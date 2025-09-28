@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import sendResponse from '../utils/sendResponse';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role, ServiceCategory } from '@prisma/client';
 import {
@@ -156,6 +156,24 @@ async getAllProviders(@Query() query: any, @Res() res: any) {
       data: result,
     });
   }
+
+
+/** GET SINGLE PROVIDER */
+@Get('providers/meta-data')
+@Roles(Role.PROVIDER)
+@ApiOperation({ summary: 'Get  provider Metadata' })
+@ApiResponse({ status: 200, description: 'Provider metadata fetched successfully' })
+async  providerMetaData(@Req() req:Request ,@Res() res:Response) {
+  const result = await this.userService.providerMetaData(req.user!.id);
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Provider fetched successfully',
+    data: result,
+  });
+}
+
+
 
 
 /** GET SINGLE PROVIDER */
