@@ -24,7 +24,7 @@ model User{
   subscription Subscription[]
   blog Blog[]
   task Task[]
-
+  PartyPlan PartyPlan[]
   userConversations Conversation[] @relation("UserConversations")
 
   providerConversations Conversation[] @relation("ProviderConversations")

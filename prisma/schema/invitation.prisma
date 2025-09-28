@@ -10,6 +10,9 @@ model Invitation {
   confirmation_token String?
   party_id String?
   user User @relation(fields: [userId],references: [id])
+  guest_name String?
+  guest_phone String?
+  party PartyPlan? @relation(fields: [party_id], references: [id])
 }
 
 enum Status {

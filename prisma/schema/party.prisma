@@ -1,0 +1,53 @@
+model PartyPlan {
+  id              String         @id @default(uuid())
+  title           String         @default("Superhero Party")
+  createdAt       DateTime       @default(now())
+  scheduledDate   DateTime       @default("2025-09-28T14:06:00Z")
+  sections        PlanSection[]
+  timeline        PartyTimeline?
+  suggestedGifts  SuggestedGiftId[]
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitations    Invitation[]
+}
+
+model PlanSection {
+  id              String          @id @default(uuid())
+  name            String          
+  partyPlanId     String
+  partyPlan       PartyPlan       @relation(fields: [partyPlanId], references: [id], onDelete: Cascade)
+  items           PlanItem[]
+  @@unique([partyPlanId, name])
+}
+model PlanItem {
+  id              String          @id @default(uuid())
+  description     String         
+  sortOrder       Int             @default(0)
+
+  planSectionId   String
+  planSection     PlanSection     @relation(fields: [planSectionId], references: [id], onDelete: Cascade)
+}
+
+// ----------------------------------------------------
+// Specific Models for Unique Data Structures
+// ----------------------------------------------------
+model PartyTimeline {
+  id              String          @id @default(uuid())
+  partyPlanId     String          @unique
+  partyPlan       PartyPlan       @relation(fields: [partyPlanId], references: [id], onDelete: Cascade)
+  events          TimelineEvent[]
+}
+model TimelineEvent {
+  id              String          @id @default(uuid())
+  time            String         
+  description     String         
+  sortOrder       Int             @default(0)
+  partyTimelineId String
+  partyTimeline   PartyTimeline   @relation(fields: [partyTimelineId], references: [id], onDelete: Cascade)
+}
+model SuggestedGiftId {
+  id              String          @id @default(uuid())
+  productId       String         
+  partyPlanId     String
+  partyPlan       PartyPlan       @relation(fields: [partyPlanId], references: [id], onDelete: Cascade)
+}
