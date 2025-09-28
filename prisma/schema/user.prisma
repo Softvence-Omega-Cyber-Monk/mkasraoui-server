@@ -60,11 +60,8 @@ model ProviderProfile{
    avg_ratting Float @default(0)
    total_review Int @default(0)
    reviews ProviderReview[]
-
    Quote Quote[]
 }
-
-
 
 enum ServiceCategory {
   VENUE_SPACES

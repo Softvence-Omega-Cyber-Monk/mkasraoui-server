@@ -1,10 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException } from '@nestjs/common';
 
 import { Request } from 'express';
 import { TasksService } from './checklist.service';
 import { CreateTaskDto } from './dto/create-checklist.dto';
 import { UpdateTaskDto } from './dto/update-checklist.dto';
-
 
 @Controller('tasks')
 export class TasksController {
@@ -22,7 +21,7 @@ export class TasksController {
       data: res
     }
     }catch(error){
-      console.log(error)
+      throw new HttpException(error.message, 500);
     }
   }
 
