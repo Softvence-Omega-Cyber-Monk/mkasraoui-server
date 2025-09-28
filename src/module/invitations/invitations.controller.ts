@@ -30,61 +30,33 @@ import sendResponse from '../utils/sendResponse';
 export class InvitationsController {
   constructor(private readonly invitationsService: InvitationsService) {}
 
-  @Post('send')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        email: { type: 'string' },
-        files: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
-  @UseInterceptors(
-    FilesInterceptor('files', 1, {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-        },
-      }),
-    }),
-  )
-  async sendInvitation(
-    @Body() createInvitationDto: CreateInvitationDto,
-    @UploadedFiles() files: Array<Express.Multer.File>,
-    @Req() req: any,
-    @Res() res: Response,
-  ) {
-    const user = req.user;
+@Post('send')
 
-    if (!files || files.length === 0) {
-      throw new HttpException('No file uploaded. An invitation image is required.', HttpStatus.BAD_REQUEST);
-    }
-    
-    const file = files[0];
-    const invitation = await this.invitationsService.createAndSendInvitation(
-      createInvitationDto.email,
-      file,
-      user.id,
-    );
-    return sendResponse(res, {
-      statusCode: HttpStatus.CREATED,
-      success: true,
-      message: 'Invitation sent successfully',
-      data: invitation,
-    });
+async sendInvitation(
+  @Body() createInvitationDto: CreateInvitationDto,
+  @Req() req: any,
+  @Res() res: Response,
+) {
+  const user = req.user;
+  
+  if (!createInvitationDto.imageUrl) {
+    throw new HttpException('The invitation image URL is required.', HttpStatus.BAD_REQUEST);
   }
-
+  
+  // 2. ✅ Call the service with the URL
+  const invitation = await this.invitationsService.createAndSendInvitation(
+    createInvitationDto.email,
+    createInvitationDto.imageUrl as string, // Pass the image URL instead of the file object
+    user.id,
+  );
+  
+  return sendResponse(res, {
+    statusCode: HttpStatus.CREATED,
+    success: true,
+    message: 'Invitation sent successfully',
+    data: invitation,
+  });
+}
   @Get('confirm')
   async confirmInvitation(@Query('token') token: string, @Res() res: Response) {
     if (!token) {

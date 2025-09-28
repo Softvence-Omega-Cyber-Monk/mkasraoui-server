@@ -22,8 +22,9 @@ export class MailService {
         subject: string;
         html: string;
         from?: string;
-        attachments?: nodemailer.Attachment[];
+        attachments?: nodemailer.Attachment[]; // 👈 RE-ADDED for image embedding
     }) {
+        // Destructure attachments again
         const { to, subject, html, from, attachments } = options;
         const senderAddress = from || `MA FATE FACILE <${process.env.EMAIL_USER}>`;
 
@@ -33,7 +34,7 @@ export class MailService {
                 to,
                 subject,
                 html,
-                attachments,
+                attachments, // 👈 Included in the send call
             });
             console.log('Email sent:', info.messageId);
             return info;

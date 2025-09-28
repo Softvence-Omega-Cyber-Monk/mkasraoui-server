@@ -1,0 +1,32 @@
+model Task {
+  id               String    @id @default(uuid())
+  name             String
+  isComplete       Boolean   @default(false)
+  category         Category  
+  priority         Priority  
+
+  dueDate          DateTime
+  daysAhead        Int     
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+}
+
+enum Category {
+  PLANNING
+  FOOD
+  VENUE
+  INVITATIONS
+  DECORATIONS
+  ACTIVITIES
+  ENTERTAINMENT
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
