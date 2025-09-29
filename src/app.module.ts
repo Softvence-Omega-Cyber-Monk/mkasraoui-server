@@ -32,6 +32,7 @@ import { AdminModule } from './module/admin/admin.module';
 import { ChecklistModule } from './module/checklist/checklist.module';
 import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module';
 import { PartGenerationModule } from './module/part-generation/part-generation.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -43,6 +44,12 @@ import { PartGenerationModule } from './module/part-generation/part-generation.m
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/', 
       renderPath: '/',
+    }),
+    BullModule.forRoot({
+      redis: process.env.REDIS_URL, 
+    }),
+    BullModule.registerQueue({
+      name: 'mail',
     }),
     MailerModule.forRoot({
       transport: {
