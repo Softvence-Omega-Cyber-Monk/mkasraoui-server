@@ -17,7 +17,7 @@ export class InvitationsService {
 
 async createAndSendInvitation(email: string, imageUrl: string, userId: string, guest_name: string, guest_phone: string,party_id:string) {
         const token = randomBytes(32).toString('hex');
-        const fileCid = 'invitation-image'; // Unique Content ID for the image
+        const fileCid = 'invitation-image';
 
         let fileContent: Buffer;
         let originalFilename: string;
