@@ -31,6 +31,7 @@ import { SubscriptionMailTemplatesService } from './module/mail/subscription.mai
 import { AdminModule } from './module/admin/admin.module';
 import { ChecklistModule } from './module/checklist/checklist.module';
 import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module';
+import { PartGenerationModule } from './module/part-generation/part-generation.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module'
     AdminModule,
     ChecklistModule,
     CustomTshirtModule,
+    PartGenerationModule,
     // PaymentModule
   ],
   controllers: [AppController],

@@ -10,13 +10,30 @@ import { UpdateTaskDto } from './dto/update-checklist.dto';
 export class TasksService {
     constructor(private prisma: PrismaService) {}
 
-    async create(userId: string, createTaskDto: CreateTaskDto): Promise<Task> {
+   async create(userId: string, createTaskDto: CreateTaskDto): Promise<Task> {
+        
+        // 1. Convert the string date to a proper Date object (Fixes Prisma error)
+        const dueDateObject = new Date(createTaskDto.dueDate);
+        const now = new Date();
+
+
+        let daysAhead = differenceInDays(dueDateObject, now);
+
+        // 3. Ensure daysAhead is never negative (0 means due today or overdue)
+        if (daysAhead < 0) {
+            daysAhead = 0;
+        }
 
         return this.prisma.task.create({
             data: {
+                // Spread the properties from the DTO
                 ...createTaskDto,
+                // Overwrite dueDate with the correctly converted Date object
+                dueDate: dueDateObject,
+                // 💡 Set the calculated value
+                daysAhead: daysAhead, 
                 userId: userId,
-                daysAhead: 0,
+                // isComplete defaults to false by the schema, so we don't need to set it
             },
         });
     }

@@ -46,8 +46,12 @@ async sendInvitation(
   // 2. ✅ Call the service with the URL
   const invitation = await this.invitationsService.createAndSendInvitation(
     createInvitationDto.email,
-    createInvitationDto.imageUrl as string, // Pass the image URL instead of the file object
+    createInvitationDto.imageUrl as string,
     user.id,
+    createInvitationDto.guest_name,
+    createInvitationDto.quest_phone,
+    createInvitationDto.party_id || ''
+
   );
   
   return sendResponse(res, {
@@ -97,9 +101,10 @@ async sendInvitation(
     });
   }
 
-  @Get('user')
-  async findOne(@Param('id') id: string, @Res() res: Response) {
-    const invitation = await this.invitationsService.findOne(id);
+  @Get('party')
+  async find_by_party(@Param('id') id: string, @Res() res: Response,@Req() req:any) {
+    const userId=req.user?.id;
+    const invitation = await this.invitationsService.find_by_party(id,userId);
 
     if (!invitation) {
       throw new HttpException('Invitation not found', HttpStatus.NOT_FOUND);

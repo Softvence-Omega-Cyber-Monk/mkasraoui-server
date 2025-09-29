@@ -15,7 +15,7 @@ export class InvitationsService {
     private mailTemplatesService: MailTemplatesService
   ) { }
 
-async createAndSendInvitation(email: string, imageUrl: string, userId: string) {
+async createAndSendInvitation(email: string, imageUrl: string, userId: string, guest_name: string, guest_phone: string,party_id:string) {
         const token = randomBytes(32).toString('hex');
         const fileCid = 'invitation-image'; // Unique Content ID for the image
 
@@ -49,6 +49,9 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string) {
                     status: 'PENDING',
                     userId: userId,
                     image: imageUrl, 
+                    guest_name,
+                    guest_phone,
+                    party_id: party_id || null,
                 },
             });
 
@@ -162,8 +165,11 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string) {
     return this.prisma.invitation.findMany();
   }
 
-  findOne(id: string) {
-    return this.prisma.invitation.findUnique({ where: { id } });
+  find_by_party(id: string, userId: string) {
+    return this.prisma.invitation.findMany({ where: {
+      party_id: id,
+      userId: userId
+    } });
   }
 
 
