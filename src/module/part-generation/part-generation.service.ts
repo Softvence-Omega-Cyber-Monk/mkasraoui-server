@@ -117,4 +117,17 @@ export class PartGenerationService {
       throw error;
     }
   }
+
+  async trackGeneration(userId: string): Promise<{ message: string }> {
+    if (!userId) {
+      throw new NotFoundException('User ID is required to track generation.');
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        total_party_generated: { increment: 1 },
+      },
+    });
+    return { message: 'User party generation count updated.' };
+  }
 }
