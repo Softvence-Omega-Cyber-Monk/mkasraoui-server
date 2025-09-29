@@ -86,7 +86,6 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string, g
                 }),
             ]);
             
-            console.log('Invitation created and email sent. Email ID:', emailResult.messageId);
             return newInvitation;
         } catch (error) {
             console.error('Error in createAndSendInvitation:', error);
