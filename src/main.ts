@@ -30,7 +30,7 @@ const publicDir = join(process.cwd(), 'public');
   app.use('/', express.static(publicDir));
 
   app.enableCors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173','https://ai-party-generator.vercel.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
