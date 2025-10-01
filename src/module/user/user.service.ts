@@ -98,7 +98,7 @@ async approveProviderRequest(requestId: string) {
 
   // Send approval email
   try {
-    const dashboardLink = `${process.env.CLIENT_URL}/provider/dashboard`;
+    const dashboardLink = `${process.env.CLIENT_URL}/dashboard`;
     const htmlContent = await this.mailTemplatesService.getProviderApprovalTemplate(
       updatedUser.name!,
       dashboardLink
