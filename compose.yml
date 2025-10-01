@@ -1,0 +1,31 @@
+services:
+  app: 
+    build: .
+    image: imranwebstudio/lachlanreid-backend:latest
+    platform: linux/amd64
+    container_name: lachlanreid-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/app/uploads
+
+  db:
+    image: postgres
+    container_name: lachlanreid_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: lachlanreid_mydatabase
+    volumes:
+      - root_pgdata:/var/lib/postgresql/data
+
+volumes:
+  root_pgdata:
