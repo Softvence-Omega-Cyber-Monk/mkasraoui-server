@@ -28,8 +28,10 @@ export class UserService {
     dto: any,
     files: Express.Multer.File[],
   ) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique(
+      { where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
+    if (user.isDeleted) throw new NotFoundException('The account is deleted!');
     if (user.role !== Role.USER)
       throw new BadRequestException('Only user can request to become a provider');
     if (user.isDeleted) throw new BadRequestException('User is deleted');
@@ -81,6 +83,7 @@ async approveProviderRequest(requestId: string) {
   });
   if (!request) throw new NotFoundException('Request not found');
 
+  if (request.user.isDeleted) throw new NotFoundException('The account is deleted!');
   // Approve provider profile
   const provider = await this.prisma.providerProfile.update({
     where: { id: requestId },
@@ -89,13 +92,13 @@ async approveProviderRequest(requestId: string) {
 
   // Update user role
   const updatedUser = await this.prisma.user.update({
-    where: { id: request.userId },
+    where: { id: request.userId,isDeleted:false },
     data: { role: Role.PROVIDER },
   });
 
   // Send approval email
   try {
-    const dashboardLink = `${process.env.CLIENT_URL}/provider/dashboard`;
+    const dashboardLink = `${process.env.CLIENT_URL}/dashboard`;
     const htmlContent = await this.mailTemplatesService.getProviderApprovalTemplate(
       updatedUser.name!,
       dashboardLink
@@ -119,7 +122,7 @@ async approveProviderRequest(requestId: string) {
   // Admin rejects provider request
   async rejectProviderRequest(requestId: string) {
     const request = await this.prisma.providerProfile.findUnique({
-      where: { id: requestId },
+      where: { id: requestId},
     });
     if (!request) throw new NotFoundException('Request not found');
 
@@ -134,7 +137,8 @@ async approveProviderRequest(requestId: string) {
 async deleteUser(userId:string){
   const isUserExist = await this.prisma.user.update({
     where:{
-    id:userId
+    id:userId,
+    isDeleted:false
     },
     data:{
     isDeleted:true
@@ -158,6 +162,7 @@ async deleteUser(userId:string){
     } = query;
 
     const where: any = {
+      user:{isDeleted:false},
       ...(isApproved !== undefined && { isApproved: isApproved === 'true' }),
       ...(serviceCategory && { serviceCategory: { has: serviceCategory } }),
       ...(serviceArea && { serviceArea: { contains: serviceArea, mode: 'insensitive' } }),
@@ -197,7 +202,12 @@ async deleteUser(userId:string){
 
   async getProviderById(id: string) {
     const provider = await this.prisma.providerProfile.findUnique({
-      where: { id },
+      where: {
+         id ,
+         user:{
+          isDeleted:false
+         }
+        },
       include: {
         user: true,
         reviews: true,
@@ -217,7 +227,11 @@ async deleteUser(userId:string){
     files: Express.Multer.File[],
   ) {
     const profile = await this.prisma.providerProfile.findUnique({
-      where: { userId },
+      where: { userId,
+        user:{
+          isDeleted:false
+        }
+       },
     });
 
     if (!profile) throw new NotFoundException('Provider profile not found');
@@ -296,7 +310,8 @@ async deleteUser(userId:string){
     const user = await this.prisma.user.findUnique({
       where:{
         id:userId,
-        role:Role.PROVIDER
+        role:Role.PROVIDER,
+        isDeleted:false
       },
       include:{
         providerProfile:true
@@ -328,7 +343,7 @@ async deleteUser(userId:string){
 
   async getMe(authUser: any) {
     const user = await this.prisma.user.findUnique({
-      where: { id: authUser.id },
+      where: { id: authUser.id,isDeleted:false },
       include: {
         subscription: true
       },
@@ -358,7 +373,7 @@ async deleteUser(userId:string){
   }
 
   async updateUser(id: string, dto: any) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id,isDeleted:false} });
     if (!user) throw new NotFoundException('User not found');
     const imageuer=dto.profileImage?buildFileUrl(dto.profileImage.filename):null;
     const result = await this.prisma.user.update({
