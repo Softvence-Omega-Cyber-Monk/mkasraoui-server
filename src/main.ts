@@ -30,7 +30,12 @@ const publicDir = join(process.cwd(), 'public');
   app.use('/', express.static(publicDir));
 
   app.enableCors({
-    origin: ['http://localhost:5173','https://ai-party-generator.vercel.app'],
+    origin: ['http://localhost:5173',
+      'https://ai-party-generator.vercel.app',
+      "https://mafetefacile.com",
+      'https://mafetefacile.net',
+      'https://mafetefacile.fr'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
