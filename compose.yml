@@ -1,9 +1,9 @@
 services:
   app: 
     build: .
-    image: imranwebstudio/lachlanreid-backend:latest
+    image: imranwebstudio/mkasraoui_backend:latest
     platform: linux/amd64
-    container_name: lachlanreid-backend
+    container_name: mkasraoui_backend
     restart: always
     ports:
       - "3000:3000"
@@ -16,14 +16,14 @@ services:
 
   db:
     image: postgres
-    container_name: lachlanreid_db
+    container_name: mkasraoui_db
     restart: always
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: lachlanreid_mydatabase
+      POSTGRES_DB: mkasraoui_mydatabase
     volumes:
       - root_pgdata:/var/lib/postgresql/data
 
