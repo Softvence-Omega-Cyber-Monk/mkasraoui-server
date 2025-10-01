@@ -44,4 +44,13 @@ export class PartGenerationController {
   remove(@Param('id') id: string) {
     return this.partGenerationService.remove(id);
   }
+
+  @Post("track-generation")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Track Party Plan generation for a user' })
+  @ApiResponse({ status: 200, description: 'User party generation count updated.' })
+  trackGeneration(@Req() req: any) {
+    const userId=req.user?.id;
+    return this.partGenerationService.trackGeneration(userId);
+  }
 }
