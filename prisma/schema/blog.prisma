@@ -3,6 +3,8 @@ model Blog {
     title String
     description String
     conclusion String
+    badge    String?
+    tag      String[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     images String[]

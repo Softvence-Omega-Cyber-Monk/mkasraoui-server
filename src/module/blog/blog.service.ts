@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { buildFileUrl } from 'src/helper/urlBuilder';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,14 +7,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class BlogService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createBlogDto: CreateBlogDto, files: Express.Multer.File[], user_id: string) {
+  async create(createBlogDto:any, files: Express.Multer.File[], user_id: string) {
     const imagePaths = files?.map((file) => buildFileUrl(file.filename)) || [];
 
     const res = await this.prisma.blog.create({
       data: {
         title: (createBlogDto as any).title || '',
-        description: (createBlogDto as any).content || '',
+        description: (createBlogDto as any).description || '',
         conclusion: (createBlogDto as any).conclusion || '',
+        badge: createBlogDto.badge || null,
+        tag: createBlogDto.tag || [],
         images: imagePaths,
         user_id: user_id,
       },
@@ -53,13 +54,15 @@ export class BlogService {
     }
   }
 
-  async update(id: string, updateBlogDto: UpdateBlogDto, files?: Express.Multer.File[]) {
+  async update(id: string, updateBlogDto: any, files?: Express.Multer.File[]) {
     try {
       // Create a data object to hold the fields to update
       const updateData: any = {
-        title: (updateBlogDto as any).title,
-        description: (updateBlogDto as any).description,
-        conclusion: (updateBlogDto as any).conclusion,
+      title: updateBlogDto.title, 
+      description: updateBlogDto.description, 
+      conclusion: updateBlogDto.conclusion,
+       badge: updateBlogDto.badge, 
+       tag: updateBlogDto.tag,
       };
 
       // Check if new files were uploaded and update the images field accordingly
