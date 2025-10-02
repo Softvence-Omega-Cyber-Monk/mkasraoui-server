@@ -24,11 +24,13 @@ export class BlogController {
         data: {
           type: 'string',
           description:
-            'The blog data as a JSON string, including title, description, and conclusion.',
+            'The blog data as a JSON string, including title, description,conclusion, badge,tag',
           example: JSON.stringify({
             title: 'My First Blog Post',
             description: 'A detailed description of my new blog post.',
             conclusion: 'In conclusion, this topic is very interesting.',
+            badge: 'Featured',
+            tag: ['NestJS', 'Prisma', 'Blog'],
           }),
         },
         files: {
@@ -170,8 +172,11 @@ export class BlogController {
           description:
             'The blog data as a JSON string. Include fields like `title` and `description` to update.',
           example: JSON.stringify({
-            title: 'My Updated Blog Title',
-            description: 'This is the new description for the blog.',
+             title: 'My First Blog Post',
+            description: 'A detailed description of my new blog post.',
+            conclusion: 'In conclusion, this topic is very interesting.',
+            badge: 'Featured',
+            tag: ['NestJS', 'Prisma', 'Blog'],
           }),
         },
         files: {
