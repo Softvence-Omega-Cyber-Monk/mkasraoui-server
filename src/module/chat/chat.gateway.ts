@@ -13,9 +13,17 @@ import { join } from 'path';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: [
+      'http://localhost:5173',
+      'https://ai-party-generator.vercel.app',
+      'https://mafetefacile.com',
+      'https://mafetefacile.net',
+      'https://mafetefacile.fr',
+    ],
+    credentials: true,
   },
 })
+
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
