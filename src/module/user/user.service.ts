@@ -63,7 +63,7 @@ export class UserService {
         latitude: dto.latitude,
         longitude: dto.longitude,
         description: dto.description,
-        priceRange: dto.priceRange,
+        price: dto.price,
         website: dto.website,
         instagram: dto.instagram,
         portfolioImages: imagePaths,
@@ -98,10 +98,10 @@ async approveProviderRequest(requestId: string) {
 
   // Send approval email
   try {
-    const dashboardLink = `${process.env.CLIENT_URL}/dashboard`;
+    // const dashboardLink = `${process.env.CLIENT_URL}/dashboard`;
     const htmlContent = await this.mailTemplatesService.getProviderApprovalTemplate(
-      updatedUser.name!,
-      dashboardLink
+      updatedUser.name!
+      // dashboardLink
     );
 
     await this.mailService.sendMail({
@@ -280,7 +280,7 @@ async deleteUser(userId:string){
       latitude,
       longitude,
       description,
-      priceRange,
+      price,
       website,
       instagram,
     } = dto;
@@ -297,7 +297,7 @@ async deleteUser(userId:string){
         latitude: Number(latitude),
         longitude: Number(longitude),
         description,
-        priceRange,
+        price,
         website,
         instagram,
         portfolioImages: updatedImages,

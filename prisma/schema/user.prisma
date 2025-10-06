@@ -50,7 +50,7 @@ model ProviderProfile{
    latitude  Float
    longitude  Float
    description String
-   priceRange  String
+   price      Float? @default(0)
    website    String?
    instagram  String?
    portfolioImages  String[]

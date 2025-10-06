@@ -32,7 +32,7 @@ export class QuoteService {
         partyTheme: dto.partyTheme,
         partyLocation: dto.partyLocation,
         description: dto.description,
-        budgetRange: dto.budgetRange,
+        price: dto.price,
         status: QuoteStatus.PENDING,
       },
     });

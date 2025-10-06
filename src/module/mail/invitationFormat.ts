@@ -78,7 +78,7 @@ export class MailTemplatesService {
     }
 
 
-    async getProviderApprovalTemplate(userName: string, dashboardLink: string): Promise<string> {
+    async getProviderApprovalTemplate(userName: string): Promise<string> {
 // ... (The rest of this method remains unchanged)
         return `<!DOCTYPE html>
 <html lang="en">
@@ -110,8 +110,8 @@ export class MailTemplatesService {
       <div class="content">
         <p>Hi <strong>${userName}</strong>,</p>
         <p>Congratulations! Your request to become a <strong>Provider</strong> has been approved by our admin team.</p>
-        <p>You now have access to all provider features.</p>
-        <a href="${dashboardLink}" class="btn">Go to My Dashboard</a>
+        <p>Please login again to access to all provider features. </p>
+
         <p>We’re thrilled to celebrate this moment with you!</p>
       </div>
       <div class="footer">© 2025 Your Company. All rights reserved.</div>

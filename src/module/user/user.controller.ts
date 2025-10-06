@@ -59,7 +59,7 @@ export class UserController {
             latitude: 40.7128,
             longitude: -74.006,
             description: 'We provide high-quality services.',
-            priceRange: '$100-$500',
+            price: 100,
             website: 'https://example.com',
             instagram: 'https://instagram.com/example',
           }),
@@ -240,7 +240,7 @@ async getProviderById(@Param('id') id: string, @Res() res: any) {
           latitude: 40.7128,
           longitude: -74.006,
           description: 'We provide high-quality services.',
-          priceRange: '$100-$500',
+          price: 200,
           website: 'https://example.com',
           instagram: 'https://instagram.com/example',
           removeImages: [
