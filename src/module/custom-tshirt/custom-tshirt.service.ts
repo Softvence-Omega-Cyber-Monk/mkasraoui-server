@@ -213,7 +213,7 @@ async getOrderById(orderId: string, userId: string, role: string) {
     return this.stripe.webhooks.constructEvent(
       (req as any).rawBody,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!,
+      process.env.STRIPE_WEBHOOK_SECRET_CUSTOM_ORDER!,
     );
   }
 }

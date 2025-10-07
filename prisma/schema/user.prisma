@@ -55,6 +55,7 @@ model ProviderProfile{
    instagram  String?
    portfolioImages  String[]
    isApproved   Boolean @default(false)
+   stripe_account_id   String?
    createdAt DateTime @default(now())
    updatedAt DateTime @updatedAt
    avg_ratting Float @default(0)

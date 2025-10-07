@@ -106,7 +106,7 @@ export class SubscriptionService {
     console.log(rawBody);
     const signature = req.headers['stripe-signature'] as string;
     if (!rawBody) {
-      throw new BadRequestException('No webhook payload was provided.');
+      throw new BadRequestException('No webhook payload was provided in subscription.');
     }
 
     try {

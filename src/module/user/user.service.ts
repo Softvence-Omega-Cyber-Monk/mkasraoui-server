@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Role, ServiceCategory } from '@prisma/client';
-
+import Stripe from 'stripe';
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import { buildFileUrl } from 'src/helper/urlBuilder';
@@ -14,13 +14,20 @@ import { MailService } from '../mail/mail.service';
 import { MailTemplatesService } from '../mail/invitationFormat';
 
 
+
 @Injectable()
 export class UserService {
+    private stripe: Stripe;
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
-    private mailTemplatesService:MailTemplatesService
-  ) { }
+    private mailTemplatesService:MailTemplatesService,
+    
+  ) { 
+     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2022-11-15' as any });
+  }
+
+  
 
   // User requests to become a provider
   async requestProvider(
@@ -76,32 +83,47 @@ export class UserService {
 
  // Admin approves provider request
 async approveProviderRequest(requestId: string) {
-  // Fetch the request
+  // 1️⃣ Fetch the provider request
   const request = await this.prisma.providerProfile.findUnique({
     where: { id: requestId },
-    include: { user: true }, // include user to get email and name
+    include: { user: true }, // get user details
   });
-  if (!request) throw new NotFoundException('Request not found');
 
+  if (!request) throw new NotFoundException('Request not found');
   if (request.user.isDeleted) throw new NotFoundException('The account is deleted!');
-  // Approve provider profile
+
+  // 2️⃣ Approve provider profile in DB
   const provider = await this.prisma.providerProfile.update({
     where: { id: requestId },
     data: { isApproved: true },
   });
 
-  // Update user role
+  // 3️⃣ Update user role to PROVIDER
   const updatedUser = await this.prisma.user.update({
-    where: { id: request.userId,isDeleted:false },
+    where: { id: request.userId, isDeleted: false },
     data: { role: Role.PROVIDER },
   });
 
-  // Send approval email
+  // 4️⃣ Create Stripe Express Account for provider (if not already created)
+  if (!provider.stripe_account_id) {
+    const stripeAccount = await  this.stripe.accounts.create({
+      type: 'express',
+      country: 'FR', // adjust to provider's country if needed
+      email: request.user.email,
+      business_type: 'individual', // or 'company'
+    });
+
+    // Save Stripe account ID in provider profile
+    await this.prisma.providerProfile.update({
+      where: { id: provider.id },
+      data: { stripe_account_id: stripeAccount.id },
+    });
+  }
+
+  // 5️⃣ Send approval email WITHOUT onboarding link
   try {
-    // const dashboardLink = `${process.env.CLIENT_URL}/dashboard`;
     const htmlContent = await this.mailTemplatesService.getProviderApprovalTemplate(
-      updatedUser.name!
-      // dashboardLink
+      updatedUser.name!, 
     );
 
     await this.mailService.sendMail({
@@ -113,11 +135,11 @@ async approveProviderRequest(requestId: string) {
     console.log(`Approval email sent to ${updatedUser.email}`);
   } catch (err) {
     console.error('Failed to send approval email:', err);
-    // optionally continue without failing the main request
   }
 
   return provider;
 }
+
 
   // Admin rejects provider request
   async rejectProviderRequest(requestId: string) {
