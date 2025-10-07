@@ -32,13 +32,16 @@ export class QuoteService {
         partyTheme: dto.partyTheme,
         partyLocation: dto.partyLocation,
         description: dto.description,
-        budgetRange: dto.budgetRange,
+        price: provider.price!,
         status: QuoteStatus.PENDING,
       },
     });
 
     return quote;
   }
+
+
+
 
   // Provider updates (BOOKED or CANCELLED)
   async updateQuoteStatus(providerId: string, quoteId: string, status: QuoteStatus) {

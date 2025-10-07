@@ -188,7 +188,7 @@ async getAllOrders(page: number, limit: number) {
   return this.stripe.webhooks.constructEvent(
     (req as any).rawBody, // ensure body is not parsed before
     sig,
-    process.env.STRIPE_WEBHOOK_SECRET!,
+    process.env.STRIPE_WEBHOOK_SECRET_DIBOX!,
   );
 }
 

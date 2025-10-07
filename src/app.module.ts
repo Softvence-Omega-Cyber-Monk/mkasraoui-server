@@ -33,6 +33,7 @@ import { ChecklistModule } from './module/checklist/checklist.module';
 import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module';
 import { PartGenerationModule } from './module/part-generation/part-generation.module';
 import { BullModule } from '@nestjs/bull';
+import { ProviderPaymentModule } from './module/provider-payment/provider-payment.module';
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { BullModule } from '@nestjs/bull';
     ChecklistModule,
     CustomTshirtModule,
     PartGenerationModule,
+    ProviderPaymentModule,
     // PaymentModule
   ],
   controllers: [AppController],
