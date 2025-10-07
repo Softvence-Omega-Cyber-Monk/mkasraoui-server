@@ -15,7 +15,7 @@ model Quote{
   partyTheme  String?
   partyLocation  String
   description   String
-  budgetRange   String
+  price        Float
   status       String
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
@@ -27,5 +27,6 @@ enum QuoteStatus {
   PENDING
   CANCELLED
   BOOKED
+  PAID
 }
 

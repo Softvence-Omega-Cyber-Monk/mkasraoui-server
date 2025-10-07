@@ -51,7 +51,5 @@ export class CreateQuoteDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ example: '$1000-$2000' })
-  @IsString()
-  budgetRange: string;
+
 }
