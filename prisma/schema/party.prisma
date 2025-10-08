@@ -6,6 +6,10 @@ model PartyPlan {
   sections        PlanSection[]
   timeline        PartyTimeline?
   suggestedGifts  SuggestedGiftId[]
+  totalInvitationConfirm Int @default(0)
+  totalInvitationCancel Int @default(0)
+  totalInvitation  Int @default(0)
+  totalPendingInvitaion Int @default(0)
   userId         String
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   invitations    Invitation[]

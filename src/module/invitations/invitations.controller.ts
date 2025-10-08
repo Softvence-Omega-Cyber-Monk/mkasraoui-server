@@ -50,8 +50,17 @@ async sendInvitation(
     user.id,
     createInvitationDto.guest_name,
     createInvitationDto.quest_phone,
-    createInvitationDto.party_id || ''
-
+    createInvitationDto.party_id || '',
+    {
+      firstName: "Milon",
+      lastName: "hthiej",
+      addressLine1: "hingcoe",
+      addressLine2: "dfdf",
+      city: "dfdfdfd",
+      state: "dfdfdf",
+      postcode: 23434,
+      country: "US"
+    }
   );
   
   return sendResponse(res, {
@@ -128,4 +137,6 @@ async sendInvitation(
       data: null,
     });
   }
+
+  
 }
