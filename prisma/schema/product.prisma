@@ -2,7 +2,7 @@ model Product {
   id           String     @id @default(uuid())
   title        String
   description  String
-  product_type ProductType @default(GIFT)
+  product_type ProductType @default(DIY_BOX)
   age_range    String
   price        Float
   discounted_price Float?
@@ -30,7 +30,6 @@ model Activity {
 }
 
 enum ProductType {
-  GIFT
   DIY_BOX
 }
 

@@ -15,87 +15,187 @@ export class InvitationsService {
     private mailTemplatesService: MailTemplatesService
   ) { }
 
-async createAndSendInvitation(email: string, imageUrl: string, userId: string, guest_name: string, guest_phone: string,party_id:string) {
-        const token = randomBytes(32).toString('hex');
-        const fileCid = 'invitation-image';
-
-        let fileContent: Buffer;
-        let originalFilename: string;
-
-        // 1. ✅ Re-introduced image fetching logic
-        try {
-            const response = await axios.get(imageUrl, {
-                responseType: 'arraybuffer',
-            });
-
-            fileContent = response.data;
-            
-            // Simple logic to get filename and ensure extension exists
-            const urlParts = new URL(imageUrl).pathname.split('/');
-            originalFilename = urlParts.pop() || 'invitation.jpg'; 
-            if (!originalFilename.includes('.')) {
-                originalFilename += '.jpg'; 
-            }
-        } catch (fetchError) {
-            console.error('Failed to fetch image:', fetchError.message);
-            throw new HttpException('Failed to fetch image from the provided URL.', HttpStatus.BAD_REQUEST);
-        }
-
-        try {
-            const newInvitation = await this.prisma.invitation.create({
-                data: {
-                    email,
-                    invitationToken: token,
-                    status: 'PENDING',
-                    userId: userId,
-                    image: imageUrl, 
-                    guest_name,
-                    guest_phone,
-                    party_id: party_id || null,
-                },
-            });
-
-            const confirmationLink = `${process.env.CLIENT_URL}/invitations/confirm?token=${token}`;
-            
-            const htmlContent = await this.mailTemplatesService.getInvitationTemplate(
-                `cid:${fileCid}`,
-                confirmationLink
-            );
-
-            const [emailResult, userUpdateResult] = await Promise.all([
-                this.mailService.sendMail({
-                    to: email,
-                    subject: 'Please Confirm Your Invitation',
-                    html: htmlContent,
-                    attachments: [{
-                        filename: originalFilename,
-                        content: fileContent,
-                        cid: fileCid,
-                    }],
-                }),
-                this.prisma.user.update({
-                    where: {
-                        id: userId
-                    },
-                    data: {
-                        confirmation_token: token,
-                        invitation_send: {
-                            increment: 1
-                        },
-                    },
-                }),
-            ]);
-            
-            return newInvitation;
-        } catch (error) {
-            console.error('Error in createAndSendInvitation:', error);
-            
-            if (error.code === 'P2002') {
-                throw new HttpException('An invitation with this email already exists.', HttpStatus.CONFLICT);
-            }
-            throw new HttpException('Failed to create and send invitation.', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+// FIX: Added the required 'shippingAddress' parameter for Gelato
+async createAndSendInvitation(
+    email: string, 
+    imageUrl: string, 
+    userId: string, 
+    guest_name: string, 
+    guest_phone: string, 
+    party_id: string,
+    shippingAddress: {
+        firstName: string,
+        lastName: string,
+        addressLine1: string,
+        addressLine2?: string,
+        city: string,
+        state?: string,
+        postcode: number | string,
+        country: string // Must be 2-letter ISO code (e.g., "US")
     }
+) {
+    const token = randomBytes(32).toString('hex');
+    const fileCid = 'invitation-image';
+
+    // Gelato API Constants
+    const GELATO_API_KEY = process.env.GELATO_API_KEY || 'YOUR_KEY_HERE'; // Load from environment variables
+    const GELATO_ORDER_ENDPOINT = 'https://order.gelatoapis.com/v4/orders';
+    // IMPORTANT: Replace this with the ACTUAL UID for your printed invitation card
+    const INVITATION_PRODUCT_UID = 'cards_pf_a5_pt_350-gsm-coated-silk_cl_4-4_ver'; 
+    const orderReferenceId = `INVITE-${randomBytes(8).toString('hex')}`; 
+
+    let fileContent: Buffer;
+    let originalFilename: string;
+
+    // 1. FETCH IMAGE (Required for BOTH email attachment and Gelato's file name logic)
+    try {
+        const response = await axios.get(imageUrl, {
+            responseType: 'arraybuffer',
+        });
+
+        fileContent = response.data;
+        const urlParts = new URL(imageUrl).pathname.split('/');
+        originalFilename = urlParts.pop() || 'invitation.jpg'; 
+        if (!originalFilename.includes('.')) {
+            originalFilename += '.jpg'; 
+        }
+    } catch (fetchError) {
+        console.error('Failed to fetch image:', fetchError.message);
+        throw new HttpException('Failed to fetch image from the provided URL.', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+        const newInvitation = await this.prisma.invitation.create({
+            data: {
+                email,
+                invitationToken: token,
+                status: 'PENDING',
+                userId: userId,
+                image: imageUrl, 
+                guest_name,
+                guest_phone,
+                party_id: party_id || null,
+            },
+        });
+
+        // 2. CONSTRUCT GELATO PAYLOAD (Order placed before email to start production ASAP)
+        const gelatoPayload = {
+            orderType: "order",
+            orderReferenceId: orderReferenceId,
+            customerReferenceId: userId,
+            currency: "EUR", 
+            shipmentMethodUid: "standard",
+            shippingAddress: {
+                ...shippingAddress,
+                country: shippingAddress.country.toUpperCase() === 'USA' ? 'US' : shippingAddress.country,
+                postCode: String(shippingAddress.postcode),
+                email: email,
+                phone: guest_phone
+            },
+            items: [{
+                itemReferenceId: `ITEM-${orderReferenceId}`,
+                productUid: INVITATION_PRODUCT_UID,
+                quantity: 1,
+                files: [{
+                    type: "default",
+                    url: imageUrl, 
+                    fileName: originalFilename
+                }],
+            }],
+        };
+
+        // 3. EXECUTE GELATO API CALL
+        let gelatoOrderId: string | null = null;
+        try {
+            const gelatoResponse = await axios.post(
+                GELATO_ORDER_ENDPOINT,
+                gelatoPayload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': GELATO_API_KEY,
+                    },
+                }
+            );
+            gelatoOrderId = gelatoResponse.data.id;
+            console.log(`Order successfully sent to Gelato. Gelato ID: ${gelatoOrderId}`);
+        } catch (gelatoError) {
+            // Log specific Gelato error details but DO NOT throw, as we still want to send the email.
+            if (axios.isAxiosError(gelatoError) && gelatoError.response) {
+                console.error('Gelato API Order Failed:', gelatoError.response.data);
+                // Optionally log the failure to a different database table
+            } else {
+                console.error('Unknown Gelato API Error:', gelatoError.message);
+            }
+        }
+        
+        // 4. PREPARE AND SEND EMAIL (Original Logic)
+        const confirmationLink = `${process.env.CLIENT_URL}/invitations/confirm?token=${token}`;
+        
+        const htmlContent = await this.mailTemplatesService.getInvitationTemplate(
+            `cid:${fileCid}`,
+            confirmationLink
+        );
+
+        // 5. RUN DATABASE UPDATES AND EMAIL SEND
+        const dbUpdates = [
+            this.prisma.user.update({
+                where: { id: userId },
+                data: { confirmation_token: token, invitation_send: { increment: 1 } },
+            }),
+            this.prisma.partyPlan.update({
+                where: { id: party_id },
+                data: { totalInvitation: { increment: 1 } },
+            }),
+            this.mailService.sendMail({
+                to: email,
+                subject: 'Please Confirm Your Invitation',
+                html: htmlContent,
+                attachments: [{
+                    filename: originalFilename,
+                    content: fileContent,
+                    cid: fileCid,
+                }],
+            }),
+        ];
+
+        // Only update the invitation status/token if the Gelato order was successful
+        if (gelatoOrderId) {
+             dbUpdates.push(
+                this.prisma.invitation.update({
+                    where: { id: newInvitation.id }, 
+                    data: { 
+                        invitationToken: gelatoOrderId, // Storing Gelato ID here
+                        status: 'PENDING'
+                    },
+                })
+             );
+        } else {
+             dbUpdates.push(
+                this.prisma.invitation.update({
+                    where: { id: newInvitation.id }, 
+                    data: { status: 'CONFIRMED'},
+                })
+             );
+        }
+
+        await Promise.all(dbUpdates);
+         
+        return newInvitation;
+        
+    } catch (error) {
+        console.error('Error in createAndSendInvitation:', error);
+        
+        if (error.code === 'P2002') {
+            throw new HttpException('An invitation with this email already exists.', HttpStatus.CONFLICT);
+        }
+        throw new HttpException('Failed to create, process, and send invitation.', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+
+
+    
   async confirmInvitation(token: string) {
     const invitation = await this.prisma.invitation.findFirstOrThrow({
       where: { invitationToken: token },
@@ -123,11 +223,22 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string, g
           confirm_inviation: { increment: 1 },
           confirmation_token: null
         }
+      }),
+      this.prisma.partyPlan.update({
+        where: {
+          id: invitation.party_id as string
+        },
+        data: {
+          totalInvitationConfirm: {
+            increment: 1
+          },
+        }
       })
     ])
    
     return { message: 'Invitation confirmed successfully.' };
   }
+
   async cancel_invitation(token: string) {
     const invitation = await this.prisma.invitation.findFirstOrThrow({
       where: { invitationToken: token },
@@ -154,6 +265,16 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string, g
           confirm_inviation: { increment: 1 },
           confirmation_token: null
         }
+      }),
+      this.prisma.partyPlan.update({
+        where: {
+          id: invitation.party_id as string
+        },
+        data: {
+          totalInvitationCancel: {
+            increment: 1
+          },
+        }
       })
     ])
    
@@ -176,4 +297,6 @@ async createAndSendInvitation(email: string, imageUrl: string, userId: string, g
   remove(id: string) {
     return this.prisma.invitation.delete({ where: { id } });
   }
+
+  
 }

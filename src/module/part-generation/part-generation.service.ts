@@ -45,24 +45,34 @@ export class PartGenerationService {
     });
   }
 
-  async findAll(userId:string): Promise<PartyPlan[]> {
-    return this.prisma.partyPlan.findMany({
-      include: {
-        sections: {
-          include: {
-            items: { orderBy: { sortOrder: 'asc' } },
-          },
+  async findAll(userId: string): Promise<any[]> {
+  const partyPlans = await this.prisma.partyPlan.findMany({
+    where: { userId },
+    include: {
+      sections: {
+        include: {
+          items: { orderBy: { sortOrder: 'asc' } },
         },
-        timeline: {
-          include: {
-            events: { orderBy: { sortOrder: 'asc' } },
-          },
-        },
-        suggestedGifts: true,
       },
-      orderBy: { scheduledDate: 'desc' },
-    });
-  }
+      timeline: {
+        include: {
+          events: { orderBy: { sortOrder: 'asc' } },
+        },
+      },
+      suggestedGifts: true,
+      _count: {
+        select: { invitations: true },
+      },
+    },
+    orderBy: { scheduledDate: 'desc' },
+  });
+
+  return partyPlans.map(plan => ({
+    ...plan,
+    invitationCount: plan._count.invitations,
+    
+  }));
+}
 
   async findOne(id: string): Promise<PartyPlan> {
     const partyPlan = await this.prisma.partyPlan.findUnique({
@@ -76,9 +86,11 @@ export class PartGenerationService {
         timeline: {
           include: {
             events: { orderBy: { sortOrder: 'asc' } },
+            
           },
         },
         suggestedGifts: true,
+        invitations:true
       },
     });
 
