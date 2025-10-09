@@ -3,10 +3,14 @@ import { Request } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
 import { CreateCustomOrderDto } from './dto/create-custom-order.dto';
+import { getGelatoVariantUid } from './utils';
+import axios from 'axios';
 
 @Injectable()
 export class CustomOrderService {
   private stripe: Stripe;
+  private readonly gelatoApi = process.env.GELATO_API_URL;
+  private readonly gelatoKey = process.env.GELATO_API_KEY;
 
   constructor(private prisma: PrismaService) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -27,7 +31,6 @@ export class CustomOrderService {
       age,
       optionalMessage,
       quantity,
-      shippingFee,
       address,
       state,
       city,
@@ -65,7 +68,6 @@ export class CustomOrderService {
         age,
         optionalMessage,
         quantity,
-        shippingFee,
         total,
         status: 'PENDING',
         address,
@@ -198,7 +200,9 @@ async getOrderById(orderId: string, userId: string, role: string) {
       throw new NotFoundException('Order not found for this session');
     }
 
-    return this.prisma.customOrder.update({
+    
+   
+    const order=await this.prisma.customOrder.update({
       where: { id: session.metadata.orderId },
       data: {
         status: 'PAID',
@@ -206,6 +210,11 @@ async getOrderById(orderId: string, userId: string, role: string) {
       },
       include: { user: true },
     });
+
+     await this.createGelatoOrder(order);
+     
+     return order
+
   }
 
   /** Construct Stripe event from webhook */
@@ -216,4 +225,66 @@ async getOrderById(orderId: string, userId: string, role: string) {
       process.env.STRIPE_WEBHOOK_SECRET_CUSTOM_ORDER!,
     );
   }
+
+
+
+
+
+
+  /** CREATE GELATO ORDER */
+  private async createGelatoOrder(order: any) {
+    try {
+      // Get correct Gelato variant dynamically
+      const productUid = 'apparel-tshirt-premium-unisex';
+      const variantId = await getGelatoVariantUid(
+        productUid,
+        order.tShirtType,
+        order.size,
+        order.color,
+      );
+
+      const payload = {
+        order_reference_id: order.id,
+        items: [
+          {
+            product_uid: productUid,
+            quantity: order.quantity,
+            variant: variantId,
+            files: [{ url: order.designUrl }],
+          },
+        ],
+        recipient: {
+          name: order.contactName || order.user.name,
+          address_line_1: order.address,
+          city: order.city,
+          postal_code: order.zipCode,
+          country: 'FR',
+          phone: order.contactPhone,
+        },
+      };
+
+      const response = await axios.post(`${this.gelatoApi}/orders`, payload, {
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': this.gelatoKey },
+      });
+
+      const gelatoData = response.data;
+
+      // Store Gelato order ID and status
+      await this.prisma.customOrder.update({
+        where: { id: order.id },
+        data: {
+          gelatoOrderId: gelatoData.id,
+          gelatoStatus: gelatoData.status,
+        },
+      });
+
+      return gelatoData;
+    } catch (err: any) {
+      console.error('❌ Failed to create Gelato order:', err.response?.data || err.message);
+      throw new BadRequestException('Failed to create Gelato order');
+    }
+  }
+
+
+
 }

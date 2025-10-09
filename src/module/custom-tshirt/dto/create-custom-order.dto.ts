@@ -69,9 +69,6 @@ export class CreateCustomOrderDto {
   @IsString()
   mockupUrl?: string;
 
-  @ApiProperty({ example: 5.0 })
-  @IsNumber()
-  shippingFee: number;
 
   @ApiProperty({ example: 35.0, description: 'Total including shipping' })
   @IsNumber()
