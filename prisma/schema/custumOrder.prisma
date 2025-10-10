@@ -7,7 +7,6 @@ model CustomOrder {
   size      String
   gender    Gender
   color     String
-  Age       String
   theme     Theme?
   name      String
   age       String

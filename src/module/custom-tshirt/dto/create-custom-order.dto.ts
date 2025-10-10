@@ -24,15 +24,11 @@ export class CreateCustomOrderDto {
   @IsEnum(Gender)
   gender: Gender;
 
-  @ApiProperty({ example: 'Red' })
+  @ApiProperty({ example: 'red' })
   @IsString()
   @IsNotEmpty()
   color: string;
 
-  @ApiProperty({ example: '10-12 years' })
-  @IsString()
-  @IsNotEmpty()
-  Age: string;
 
   @ApiProperty({ enum: Theme, required: false, example: Theme.MUSIC })
   @IsOptional()
