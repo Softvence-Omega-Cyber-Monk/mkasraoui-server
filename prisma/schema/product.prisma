@@ -15,7 +15,11 @@ model Product {
   total_review Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  theme String @default("SUPERHERO")
+  
+  theme Theme @default(SUPERHERO) 
+
+  category DIY_Category @default(DIY_BOX)
+  
   up_to_kids Int?
   OrderItem OrderItem[]
   favorite Favorite[]
@@ -29,20 +33,30 @@ model Activity {
   product     Product  @relation(fields: [productId], references: [id])
 }
 
+
 enum ProductType {
   DIY_BOX
 }
 
+enum DIY_Category {
+  DIY_BOX
+  BIRTHDAY_DECORATIONS
+  GENERAL_CRAFTS
+}
+
 enum Theme {
- SUPERHERO
+  SUPERHERO
   SPACE
   ART
   SCIENCE
   MUSIC
   SPORTS
   PRINCESS
-  DIONSOUR
+  DINOSAUR 
   UNICORNS
   PIRATES
   JUNGLE
+  HOLIDAY
+  CELEBRATION 
 }
+
