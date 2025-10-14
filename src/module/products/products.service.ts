@@ -99,15 +99,17 @@ async create(
       include: { reviews: true },
     });
 
-    const gifts = await this.prisma.product.findMany({
-      where: {
-        product_type: 'GIFT',
-        ...commonWhere,
-      },
-      include: { reviews: true },
-    });
+    // const gifts = await this.prisma.product.findMany({
+    //   where: {
+    //     product_type: 'GIFT',
+    //     ...commonWhere,
+    //   },
+    //   include: { reviews: true },
+    // });
 
-    return { diyBoxes, gifts };
+    return { diyBoxes
+      //  gifts 
+      };
   }
 
   // Get product by Id
