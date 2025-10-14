@@ -34,6 +34,7 @@ import { CustomTshirtModule } from './module/custom-tshirt/custom-tshirt.module'
 import { PartGenerationModule } from './module/part-generation/part-generation.module';
 import { BullModule } from '@nestjs/bull';
 import { ProviderPaymentModule } from './module/provider-payment/provider-payment.module';
+import { AmazonServiceModule } from './module/amazon-service/amazon-service.module';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { ProviderPaymentModule } from './module/provider-payment/provider-paymen
     CustomTshirtModule,
     PartGenerationModule,
     ProviderPaymentModule,
+    AmazonServiceModule,
     // PaymentModule
   ],
   controllers: [AppController],
