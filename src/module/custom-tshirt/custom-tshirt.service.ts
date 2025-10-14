@@ -3,9 +3,9 @@ import { Request } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
 import { CreateCustomOrderDto } from './dto/create-custom-order.dto';
-// import { getGelatoVariantUid } from './utils';
 import axios from 'axios';
-import { TShirtType } from '@prisma/client';
+import { TShirtCategory } from '@prisma/client';
+
 
 @Injectable()
 export class CustomOrderService {
@@ -23,6 +23,7 @@ export class CustomOrderService {
   async createCheckout(userId: string, body: CreateCustomOrderDto) {
     const {
       tShirtType,
+      category,
       size,
       gender,
       color,
@@ -60,6 +61,7 @@ export class CustomOrderService {
         userId,
         tShirtType,
         size,
+        category,
         gender,
         color,
         theme,
@@ -68,7 +70,7 @@ export class CustomOrderService {
         optionalMessage,
         quantity,
         total,
-        status: 'PENDING',
+        status:'PENDING',
         address,
         city,
         state,
@@ -129,6 +131,8 @@ async getOrderById(orderId: string, userId: string, role: string) {
 
   /** Get all custom orders for a user (paginated) */
   async getUserOrders(userId: string, page: number, limit: number) {
+
+
     const skip = (page - 1) * limit;
 
     const [orders, total] = await this.prisma.$transaction([
@@ -149,6 +153,8 @@ async getOrderById(orderId: string, userId: string, role: string) {
         totalPages: Math.ceil(total / limit),
       },
       orders,
+      test
+
     };
   }
 
@@ -232,12 +238,18 @@ private async createGelatoOrder(order:any) {
   try {
 
     let productUid:string= "";
-    if(order.tShirtType===TShirtType.ADULT){
-     productUid =`apparel_product_gca_t-shirt_gsc_crewneck_gcu_unisex_gqa_prm_gsi_${order.size}_gco_${order.color}_gpr_4-0_bella-and-canvas_3001`;
+    if(order.category===TShirtCategory.Premium_Kids_Crewneck_TShirt){
+     productUid =`apparel_product_gca_t-shirt_gsc_crewneck_gcu_kids_gqa_prm_gsi_${order.size}_gco_${order.color}_gpr_4-0`;
    
     }
-    if(order.tShirtType===TShirtType.CHILD){
-    productUid=  `apparel_product_gca_t-shirt_gsc_crewneck_gcu_kids_gqa_organic_gsi_${order.size}_gco_${order.color}_gpr_4-0_sols_03578`;
+    if(order.category===TShirtCategory.Recycled_Blend_Kids_Sweatshirt){
+    productUid=  `apparel_product_gca_sweatshirt_gsc_crewneck_gcu_kids_gqa_prm_gsi_${order.size}_gco_${order.color}_gpr_4-0_sols_04239`;
+    }
+    if(order.category===TShirtCategory.Toddler_Cotton_Jersey_TShirt){
+    productUid=  `apparel_product_gca_t-shirt_gsc_crewneck_gcu_kids_gqa_prm_gsi_${order.size}_gco_${order.color}_gpr_4-0_rabbit-skins_3301t`;
+    }
+    if(order.category===TShirtCategory.Ultra_Cotton_Unisex_Crewneck_TShirt){
+    productUid=  `apparel_product_gca_t-shirt_gsc_crewneck_gcu_unisex_gqa_ultracotton_gsi_${order.size}_gco_${order.color}_gpr_4-0_gildan_2000`;
     }
     const orderReferenceId = `ORDER-${order.id}`;
     const itemReferenceId = `ITEM-${order.id}`;

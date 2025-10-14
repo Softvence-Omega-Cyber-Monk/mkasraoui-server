@@ -8,12 +8,16 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { TShirtType, Gender, Theme } from '@prisma/client';
+import { TShirtType, Gender, Theme, TShirtCategory } from '@prisma/client';
 
 export class CreateCustomOrderDto {
   @ApiProperty({ enum: TShirtType, example: TShirtType.ADULT })
   @IsEnum(TShirtType)
   tShirtType: TShirtType;
+
+  @ApiProperty({ enum: TShirtCategory, example: TShirtCategory.Premium_Kids_Crewneck_TShirt })
+  @IsEnum(TShirtCategory)
+  category: TShirtCategory;
 
   @ApiProperty({ example: 'L' })
   @IsString()

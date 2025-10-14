@@ -4,6 +4,7 @@ model CustomOrder {
   user      User        @relation(fields: [userId], references: [id])
 
   tShirtType    TShirtType 
+  category   TShirtCategory?
   size      String
   gender    Gender
   color     String
@@ -38,6 +39,13 @@ enum TShirtType {
     ADULT
 }
 
+
+enum TShirtCategory {
+Premium_Kids_Crewneck_TShirt
+Ultra_Cotton_Unisex_Crewneck_TShirt
+Toddler_Cotton_Jersey_TShirt
+Recycled_Blend_Kids_Sweatshirt
+}
 
 enum Gender {
     MALE
