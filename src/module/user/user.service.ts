@@ -363,6 +363,45 @@ async deleteUser(userId:string){
   }
 
 
+   async userMetaData(userId:string){
+    const user = await this.prisma.user.findUnique({
+      where:{
+        id:userId,
+        role:Role.USER,
+        isDeleted:false
+      },
+      include:{
+        
+      }
+    })
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const totalOrder = await this.prisma.order.count({
+      where:{userId}
+    })
+
+    const totalFavorite = await this.prisma.favorite.count({
+      where:{user_id:userId}
+    })
+
+    const totalQuotes = await this.prisma.quote.count({
+      where:{userId}
+    })
+
+    const totalCustomOrder = await this.prisma.customOrder.count({
+      where:{userId}
+    })
+    
+    return {
+    totalCustomOrder,totalFavorite,totalQuotes,totalOrder
+    }
+    
+
+  }
+
+
   async getMe(authUser: any) {
     const user = await this.prisma.user.findUnique({
       where: { id: authUser.id,isDeleted:false },

@@ -168,7 +168,22 @@ async  providerMetaData(@Req() req:Request ,@Res() res:Response) {
   return sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'Provider fetched successfully',
+    message: 'Provider meta data fetched successfully',
+    data: result,
+  });
+}
+
+/** GET SINGLE PROVIDER */
+@Get('meta-data/user')
+@Roles(Role.USER)
+@ApiOperation({ summary: 'Get User Metadata' })
+@ApiResponse({ status: 200, description: 'user metadata fetched successfully' })
+async  userMetaData(@Req() req:Request ,@Res() res:Response) {
+  const result = await this.userService.userMetaData(req.user!.id);
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'user meta fetched successfully',
     data: result,
   });
 }

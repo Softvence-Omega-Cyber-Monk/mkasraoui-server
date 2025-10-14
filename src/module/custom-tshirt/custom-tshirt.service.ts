@@ -3,8 +3,9 @@ import { Request } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
 import { CreateCustomOrderDto } from './dto/create-custom-order.dto';
-import { getGelatoVariantUid } from './utils';
 import axios from 'axios';
+import { TShirtCategory } from '@prisma/client';
+
 
 @Injectable()
 export class CustomOrderService {
@@ -22,10 +23,10 @@ export class CustomOrderService {
   async createCheckout(userId: string, body: CreateCustomOrderDto) {
     const {
       tShirtType,
+      category,
       size,
       gender,
       color,
-      Age,
       theme,
       name,
       age,
@@ -60,16 +61,16 @@ export class CustomOrderService {
         userId,
         tShirtType,
         size,
+        category,
         gender,
         color,
-        Age,
         theme,
         name,
         age,
         optionalMessage,
         quantity,
         total,
-        status: 'PENDING',
+        status:'PENDING',
         address,
         city,
         state,
@@ -77,7 +78,7 @@ export class CustomOrderService {
         designUrl,
         mockupUrl,
         contactName,
-        contactPhone,
+        contactPhone
       },
       include: { user: true },
     });
@@ -130,6 +131,8 @@ async getOrderById(orderId: string, userId: string, role: string) {
 
   /** Get all custom orders for a user (paginated) */
   async getUserOrders(userId: string, page: number, limit: number) {
+
+
     const skip = (page - 1) * limit;
 
     const [orders, total] = await this.prisma.$transaction([
@@ -150,6 +153,8 @@ async getOrderById(orderId: string, userId: string, role: string) {
         totalPages: Math.ceil(total / limit),
       },
       orders,
+      test
+
     };
   }
 
@@ -229,62 +234,88 @@ async getOrderById(orderId: string, userId: string, role: string) {
 
 
 
+private async createGelatoOrder(order:any) {
+  try {
 
-
-  /** CREATE GELATO ORDER */
-  private async createGelatoOrder(order: any) {
-    try {
-      // Get correct Gelato variant dynamically
-      const productUid = 'apparel-tshirt-premium-unisex';
-      const variantId = await getGelatoVariantUid(
-        productUid,
-        order.tShirtType,
-        order.size,
-        order.color,
-      );
-
-      const payload = {
-        order_reference_id: order.id,
-        items: [
-          {
-            product_uid: productUid,
-            quantity: order.quantity,
-            variant: variantId,
-            files: [{ url: order.designUrl }],
-          },
-        ],
-        recipient: {
-          name: order.contactName || order.user.name,
-          address_line_1: order.address,
-          city: order.city,
-          postal_code: order.zipCode,
-          country: 'FR',
-          phone: order.contactPhone,
-        },
-      };
-
-      const response = await axios.post(`${this.gelatoApi}/orders`, payload, {
-        headers: { 'Content-Type': 'application/json', 'X-API-KEY': this.gelatoKey },
-      });
-
-      const gelatoData = response.data;
-
-      // Store Gelato order ID and status
-      await this.prisma.customOrder.update({
-        where: { id: order.id },
-        data: {
-          gelatoOrderId: gelatoData.id,
-          gelatoStatus: gelatoData.status,
-        },
-      });
-
-      return gelatoData;
-    } catch (err: any) {
-      console.error('❌ Failed to create Gelato order:', err.response?.data || err.message);
-      throw new BadRequestException('Failed to create Gelato order');
+    let productUid:string= "";
+    if(order.category===TShirtCategory.Premium_Kids_Crewneck_TShirt){
+     productUid =`apparel_product_gca_t-shirt_gsc_crewneck_gcu_kids_gqa_prm_gsi_${order.size}_gco_${order.color}_gpr_4-0`;
+   
     }
-  }
+    if(order.category===TShirtCategory.Recycled_Blend_Kids_Sweatshirt){
+    productUid=  `apparel_product_gca_sweatshirt_gsc_crewneck_gcu_kids_gqa_prm_gsi_${order.size}_gco_${order.color}_gpr_4-0_sols_04239`;
+    }
+    if(order.category===TShirtCategory.Toddler_Cotton_Jersey_TShirt){
+    productUid=  `apparel_product_gca_t-shirt_gsc_crewneck_gcu_kids_gqa_prm_gsi_${order.size}_gco_${order.color}_gpr_4-0_rabbit-skins_3301t`;
+    }
+    if(order.category===TShirtCategory.Ultra_Cotton_Unisex_Crewneck_TShirt){
+    productUid=  `apparel_product_gca_t-shirt_gsc_crewneck_gcu_unisex_gqa_ultracotton_gsi_${order.size}_gco_${order.color}_gpr_4-0_gildan_2000`;
+    }
+    const orderReferenceId = `ORDER-${order.id}`;
+    const itemReferenceId = `ITEM-${order.id}`;
 
+    const payload = {
+      orderType: 'order',
+      orderReferenceId,
+      customerReferenceId: order.userId,
+      currency: 'EUR',
+      shipmentMethodUid: 'standard',
+      items: [
+        {
+          itemReferenceId,
+          productUid:productUid,
+          quantity: order.quantity,
+          files: [
+            {
+              type: 'default',
+              url: order.designUrl,
+            },
+          ],
+        },
+      ],
+      shippingAddress: {
+        firstName: order.contactName || order.user.name || 'Customer',
+        lastName: order.user.lastName || ' ',
+        addressLine1: order.address || 'Unknown address',
+        city: order.city || 'Paris',
+        postCode: String(order.zipCode || '00000'),
+        country: 'FR',
+        phone: order.contactPhone || '+33000000000',
+        email: order.user.email || 'test@example.com',
+      },
+    };
+
+    console.log('🚀 Sending payload to Gelato:', JSON.stringify(payload, null, 2));
+
+    const response = await axios.post(
+      `${this.gelatoApi}/orders`,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': this.gelatoKey,
+        },
+      },
+    );
+
+    const gelatoData = response.data;
+
+    await this.prisma.customOrder.update({
+      where: { id: order.id },
+      data: {
+        gelatoOrderId: gelatoData.id,
+        gelatoStatus: gelatoData.status,
+      },
+    });
+
+    console.log('✅ Gelato order created successfully:', gelatoData);
+    return gelatoData;
+
+  } catch (err: any) {
+    console.error('❌ Failed to create Gelato order:', err.response?.data || err.message);
+    throw new BadRequestException('Failed to create Gelato order');
+  }
+}
 
 
 }
