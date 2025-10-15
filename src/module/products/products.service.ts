@@ -182,37 +182,39 @@ async create(
     }
   }
 
-  // Delete product (NO CHANGE)
+  // Delete product safely
   async remove(id: string) {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+
     return this.prisma.$transaction(async (prisma) => {
+      // Delete dependent records first
       await prisma.activity.deleteMany({ where: { productId: id } });
+      await prisma.orderItem.deleteMany({ where: { productId: id } });
+      await prisma.favorite.deleteMany({ where: { product_id: id } });
+
+      // Now safely delete the product
       return prisma.product.delete({ where: { id } });
     });
   }
 
-
-
-
-  async create_activity(activity:any,file:any){
-   const videoUrl=buildFileUrl(file.filename)
-   const res=await this.prisma.dIY_activity.create({
-    data:{
-      ...activity,
-      video:videoUrl
-    }
-   })
-   return res;
+  async create_activity(activity: any, file: any) {
+    const videoUrl = buildFileUrl(file.filename);
+    const res = await this.prisma.dIY_activity.create({
+      data: {
+        ...activity,
+        video: videoUrl
+      }
+    });
+    return res;
   }
 
-
-  async get_all_activity(filterDto:ActivityQuery){
-    const {search}=filterDto
-    const searchCondition:any={}
-    if(search){
+  async get_all_activity(filterDto: ActivityQuery) {
+    const { search } = filterDto;
+    const searchCondition: any = {};
+    if (search) {
       searchCondition.OR = [
         { title: { contains: search, mode: 'insensitive' as const } },
         { description: { contains: search, mode: 'insensitive' as const } },
@@ -220,9 +222,10 @@ async create(
     }
    
     return this.prisma.dIY_activity.findMany({
-      where:{
+      where: {
         ...searchCondition
       }
-    })
+    });
   }
+
 }
