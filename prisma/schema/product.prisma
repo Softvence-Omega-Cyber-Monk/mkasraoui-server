@@ -38,6 +38,16 @@ enum ProductType {
   DIY_BOX
 }
 
+
+model DIY_activity {
+  id String @id @default(uuid())
+  title String?
+  description String?
+  video String?
+  instruction_sheet String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 enum DIY_Category {
   DIY_BOX
   BIRTHDAY_DECORATIONS

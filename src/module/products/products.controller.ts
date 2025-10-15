@@ -12,6 +12,7 @@ import {
   HttpStatus,
   HttpException,
   Query,
+  UploadedFile,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ProductsService } from './products.service';
@@ -19,6 +20,7 @@ import { CreateProductDTO, CreateProductMultipartDto, ProductFilterDto } from '.
 import { UpdateProductDto } from './dto/update-product.dto';
 import {
   FileFieldsInterceptor,
+  FileInterceptor,
 } from '@nestjs/platform-express';
 import {
   ApiBody,
@@ -35,6 +37,8 @@ import { Role } from '@prisma/client';
 import sendResponse from 'src/module/utils/sendResponse';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
+import { CreateDiyActivityMultipartDto } from './dto/createDiyActivity.dto';
+import { ActivityQuery } from './dto/activityQuery.dto';
 const fileStorageOptions = {
   storage: diskStorage({
     destination: './uploads',
@@ -50,7 +54,11 @@ const fileStorageOptions = {
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
-
+  @Public()
+@Get("activity")
+async getAll(@Query()filterDto:ActivityQuery){
+  return this.productsService.get_all_activity(filterDto)
+}
   // --------------------------------------------------------------------------
   //                 CREATE PRODUCT ROUTE (UPDATED)
   // --------------------------------------------------------------------------
@@ -71,7 +79,6 @@ export class ProductsController {
       { name: 'files', maxCount: 10 },       
       { name: 'tutorialVideo', maxCount: 1 },
     ],
-    // 💡 FIX: Passed the fileStorageOptions variable to the interceptor
     fileStorageOptions, 
   ),
 )
@@ -264,7 +271,7 @@ async createProduct(
         data: null,
       });
     }
-  }
+  } 
 
   // --------------------------------------------------------------------------
   //                   DELETE PRODUCT ROUTE (NO CHANGE)
@@ -289,4 +296,57 @@ async createProduct(
       });
     }
   }
+
+
+
+
+@Post('create-activity')
+@Public()
+@UseInterceptors(
+  FileInterceptor('video', {
+    ...fileStorageOptions,
+    limits: { fileSize: 10 * 1024 * 1024 } 
+  })
+)
+@ApiOperation({ summary: 'Create a new DIY activity with an optional video upload' })
+@ApiConsumes('multipart/form-data') 
+@ApiBody({
+  description: 'Data for the new DIY activity, including an optional video file.',
+  type: 'multipart/form-data' as any,
+  schema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string', nullable: true },
+      description: { type: 'string', nullable: true },
+      instruction_sheet: { type: 'string', nullable: true },
+      video: {
+        type: 'string',
+        format: 'binary',
+        description: 'The video file for the DIY activity (max 10MB).'
+      },
+    },
+    required: ['title'] 
+  },
+})
+async create_activity(
+  @Body() body: any,
+  @UploadedFile() videoFile: Express.Multer.File,
+) {
+  try {
+    let savedFilePath: string | null = null;
+    if (videoFile) {
+      savedFilePath = `/uploads/${videoFile.filename}`; 
+      body.video = savedFilePath;
+    }
+    const res=await this.productsService.create_activity(body, videoFile);
+    return res;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+
+
+
 }

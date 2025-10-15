@@ -8,6 +8,9 @@ CREATE TYPE "public"."Priority" AS ENUM ('HIGH', 'MEDIUM', 'LOW');
 CREATE TYPE "public"."TShirtType" AS ENUM ('CHILD', 'ADULT');
 
 -- CreateEnum
+CREATE TYPE "public"."TShirtCategory" AS ENUM ('Premium_Kids_Crewneck_TShirt', 'Ultra_Cotton_Unisex_Crewneck_TShirt', 'Toddler_Cotton_Jersey_TShirt', 'Recycled_Blend_Kids_Sweatshirt');
+
+-- CreateEnum
 CREATE TYPE "public"."Gender" AS ENUM ('MALE', 'FEMALE', 'BOY', 'GIRL');
 
 -- CreateEnum
@@ -101,10 +104,10 @@ CREATE TABLE "public"."CustomOrder" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "tShirtType" "public"."TShirtType" NOT NULL,
+    "category" "public"."TShirtCategory",
     "size" TEXT NOT NULL,
     "gender" "public"."Gender" NOT NULL,
     "color" TEXT NOT NULL,
-    "Age" TEXT NOT NULL,
     "theme" "public"."Theme",
     "name" TEXT NOT NULL,
     "age" TEXT NOT NULL,
@@ -334,6 +337,19 @@ CREATE TABLE "public"."Activity" (
     "productId" TEXT NOT NULL,
 
     CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."DIY_activity" (
+    "id" TEXT NOT NULL,
+    "title" TEXT,
+    "description" TEXT,
+    "video" TEXT,
+    "instruction_sheet" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "DIY_activity_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

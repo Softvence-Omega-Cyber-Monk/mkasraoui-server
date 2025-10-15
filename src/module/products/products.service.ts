@@ -3,6 +3,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDTO, ProductFilterDto } from './dto/create-product.dto';
 import { buildFileUrl } from 'src/helper/urlBuilder';
+import { ActivityQuery } from './dto/activityQuery.dto';
 
 @Injectable()
 export class ProductsService {
@@ -191,5 +192,37 @@ async create(
       await prisma.activity.deleteMany({ where: { productId: id } });
       return prisma.product.delete({ where: { id } });
     });
+  }
+
+
+
+
+  async create_activity(activity:any,file:any){
+   const videoUrl=buildFileUrl(file.filename)
+   const res=await this.prisma.dIY_activity.create({
+    data:{
+      ...activity,
+      video:videoUrl
+    }
+   })
+   return res;
+  }
+
+
+  async get_all_activity(filterDto:ActivityQuery){
+    const {search}=filterDto
+    const searchCondition:any={}
+    if(search){
+      searchCondition.OR = [
+        { title: { contains: search, mode: 'insensitive' as const } },
+        { description: { contains: search, mode: 'insensitive' as const } },
+      ];
+    }
+   
+    return this.prisma.dIY_activity.findMany({
+      where:{
+        ...searchCondition
+      }
+    })
   }
 }
