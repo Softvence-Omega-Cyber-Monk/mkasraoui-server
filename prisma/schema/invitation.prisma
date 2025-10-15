@@ -1,22 +1,40 @@
-model Invitation {
-  id        String @id @default(uuid())
-  status    Status @default(PENDING)
-  email     String
-  image     String?
-  invitationToken String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId String
-  confirmation_token String?
-  party_id String?
-  user User @relation(fields: [userId],references: [id])
-  guest_name String?
-  guest_phone String?
-  party PartyPlan? @relation(fields: [party_id], references: [id])
-}
-
 enum Status {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+model Invitation {
+  id                 String          @id @default(uuid())
+  status             Status          @default(PENDING)
+  email              String
+  image              String?
+  invitationToken    String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  userId             String
+  confirmation_token String?
+  party_id           String?
+  guest_name         String?
+  guest_phone        String?
+  user               User            @relation(fields: [userId], references: [id])
+  party              PartyPlan?      @relation(fields: [party_id], references: [id])
+  shippingAddress    ShippingAddress?
+}
+
+model ShippingAddress {
+  id                 String    @id @default(uuid())
+  firstName          String
+  lastName           String
+  addressLine1       String
+  addressLine2       String?
+  city               String
+  state              String?
+  postcode           String   
+  country            String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  invitationId       String    @unique 
+  invitation         Invitation @relation(fields: [invitationId], references: [id])
 }

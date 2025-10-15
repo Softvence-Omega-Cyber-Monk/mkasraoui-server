@@ -32,44 +32,46 @@ export class InvitationsController {
 
 @Post('send')
 
-async sendInvitation(
-  @Body() createInvitationDto: CreateInvitationDto,
-  @Req() req: any,
-  @Res() res: Response,
-) {
-  const user = req.user;
-  
-  if (!createInvitationDto.imageUrl) {
-    throw new HttpException('The invitation image URL is required.', HttpStatus.BAD_REQUEST);
-  }
-  
-  // 2. ✅ Call the service with the URL
-  const invitation = await this.invitationsService.createAndSendInvitation(
-    createInvitationDto.email,
-    createInvitationDto.imageUrl as string,
-    user.id,
-    createInvitationDto.guest_name,
-    createInvitationDto.quest_phone,
-    createInvitationDto.party_id || '',
-    {
-      firstName: "Milon",
-      lastName: "hthiej",
-      addressLine1: "hingcoe",
-      addressLine2: "dfdf",
-      city: "dfdfdfd",
-      state: "dfdfdf",
-      postcode: 23434,
-      country: "US"
+ async sendInvitation(
+    @Body() createInvitationDto: CreateInvitationDto,
+    @Req() req: any, // Use proper typing for Req if possible
+    @Res() res: Response, // Use proper typing for Res if possible
+  ) {
+    // Assuming req.user is populated by a middleware (e.g., AuthGuard)
+    const user = req.user; 
+
+    // 1. ✅ Input Validation Check (as in original code)
+    if (!createInvitationDto.imageUrl) {
+      throw new HttpException(
+        'The invitation image URL is required.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-  );
-  
-  return sendResponse(res, {
-    statusCode: HttpStatus.CREATED,
-    success: true,
-    message: 'Invitation sent successfully',
-    data: invitation,
-  });
-}
+    
+    // 2. ✅ Call the service with the extracted DTO data
+    // Use the DTO fields directly. You don't need to manually create the
+    // shippingAddress object as it already exists in the DTO due to validation.
+    const invitation = await this.invitationsService.createAndSendInvitation(
+      createInvitationDto.email,
+      createInvitationDto.imageUrl,
+      user.id,
+      createInvitationDto.guest_name,
+      // 💡 Corrected to use createInvitationDto.guest_phone (based on your DTO)
+      createInvitationDto.guest_phone, 
+      // 💡 Corrected to ensure party_id is passed correctly (it's non-optional in the DTO now)
+      createInvitationDto.party_id, 
+      // 💡 Pass the full, validated nested object directly
+      createInvitationDto.shippingAddress, 
+    );
+
+    // 3. ✅ Send Response
+    return sendResponse(res, {
+      statusCode: HttpStatus.CREATED,
+      success: true,
+      message: 'Invitation sent successfully',
+      data: invitation,
+    });
+  }
   @Get('confirm')
   async confirmInvitation(@Query('token') token: string, @Res() res: Response) {
     if (!token) {
