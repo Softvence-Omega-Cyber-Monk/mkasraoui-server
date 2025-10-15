@@ -170,14 +170,22 @@ export class ProductsService {
   }
 
   // Delete product (NO CHANGE)
-  async remove(id: string) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-    return this.prisma.$transaction(async (prisma) => {
-      await prisma.activity.deleteMany({ where: { productId: id } });
-      return prisma.product.delete({ where: { id } });
-    });
+// Delete product safely
+async remove(id: string) {
+  const product = await this.prisma.product.findUnique({ where: { id } });
+  if (!product) {
+    throw new NotFoundException(`Product with ID ${id} not found`);
   }
+
+  return this.prisma.$transaction(async (prisma) => {
+    // Delete dependent records first
+    await prisma.activity.deleteMany({ where: { productId: id } });
+    await prisma.orderItem.deleteMany({ where: { productId: id } }); // 👈 NEW LINE
+    await prisma.favorite.deleteMany({ where: { product_id: id } });  // 👈 optional, if exists
+
+    // Now safely delete the product
+    return prisma.product.delete({ where: { id } });
+  });
+}
+
 }
