@@ -62,7 +62,6 @@ async create(
     return res;
   } catch (err) {
     console.log('Error in product creation service:', err);
-    // You should re-throw the error so the controller can catch and handle the HTTP response.
     throw err;
   }
 }
@@ -228,4 +227,57 @@ async create(
     });
   }
 
+
+
+  async delete_activity(id:string){
+    const res=await this.prisma.dIY_activity.delete({
+      where:{
+        id
+      }
+    })
+    return res;
+  }
+
+
+
+  // Inside ProductsService
+// ...
+
+async update_activity(activity: any, file: any, id: string) {
+    let videoUrl: any = undefined;
+    
+    // 1. Determine the video URL
+    if (file) {
+      // New file uploaded
+      videoUrl = buildFileUrl(file.filename);
+    } else if (activity.video === null) {
+      // Client explicitly sent 'video: null' to clear it
+      videoUrl = null; 
+    }
+    const updateData: any = {
+        title: activity.title,
+        description: activity.description,
+        instruction_sheet: activity.instruction_sheet,
+    
+        ...(videoUrl !== undefined ? { video: videoUrl } : {}),
+    };
+
+    try {
+        // 2. Use update for a single record. Prisma throws NotFoundError if 'id' not found.
+        const res = await this.prisma.dIY_activity.update({
+            where: {
+                id: id
+            },
+            data: updateData
+        });
+        return res;
+    } catch (err) {
+        // Handle the case where the record ID doesn't exist 
+        // (Prisma will throw PrismaClientKnownRequestError with code P2025 or similar)
+        if (err.code === 'P2025') {
+            throw new NotFoundException(`DIY Activity with ID ${id} not found.`);
+        }
+        throw err;
+    }
+}
 }

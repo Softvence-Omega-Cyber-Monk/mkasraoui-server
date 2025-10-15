@@ -39,6 +39,7 @@ import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { CreateDiyActivityMultipartDto } from './dto/createDiyActivity.dto';
 import { ActivityQuery } from './dto/activityQuery.dto';
+import { UpdateActivityMultipartDto } from './dto/updatedActivity.dto';
 const fileStorageOptions = {
   storage: diskStorage({
     destination: './uploads',
@@ -50,15 +51,69 @@ const fileStorageOptions = {
   }),
 };
 
+
+
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+
+  // ---------------------------------------------------------------------activity----------------------------------------------------
+@Patch('update-activity/:id')
+@Public()
+@UseInterceptors(
+  FileInterceptor('video', {
+    ...fileStorageOptions,
+    limits: { fileSize: 10 * 1024 * 1024 } 
+  })
+)
+@ApiOperation({ summary: 'update a new DIY activity with an optional video upload' })
+@ApiConsumes('multipart/form-data') 
+@ApiBody({
+  description: 'Updated data for the DIY activity, including an optional replacement video file.',
+  type: UpdateActivityMultipartDto,
+})
+async update_activity(
+  @Body() body: any,
+  @UploadedFile() videoFile: Express.Multer.File,
+  @Param('id') id:string
+) {
+  try {
+    const res=await this.productsService.update_activity(body, videoFile,id);
+    return {
+      message:"Activity updated successfull",
+      data:res
+    }
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+
   @Public()
 @Get("activity")
 async getAll(@Query()filterDto:ActivityQuery){
   return this.productsService.get_all_activity(filterDto)
 }
+
+
+
+
+@Delete('delet-activity/:id')
+@Public()
+async deleteActivity(@Param('id') id:string){
+  const res=await this.productsService.delete_activity(id)
+  return{
+    message:"Activity delete successfull",
+    data:res
+  }
+}
+
+
+
+
   // --------------------------------------------------------------------------
   //                 CREATE PRODUCT ROUTE (UPDATED)
   // --------------------------------------------------------------------------
@@ -104,10 +159,6 @@ async createProduct(
     const parsedJson = JSON.parse(data);
     productData = plainToInstance(CreateProductDTO, parsedJson);
     await validateOrReject(productData);
-    
-    // 💡 Now, imageFiles and tutorialVideoFile will correctly have the 'filename' 
-    // property populated by Multer after saving the file to disk.
-    console.log(productData,imageFiles,tutorialVideoFile)
     
     const createdProduct = await this.productsService.create(
       productData,
@@ -345,6 +396,8 @@ async create_activity(
     throw err;
   }
 }
+
+
 
 
 
