@@ -3,56 +3,69 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDTO, ProductFilterDto } from './dto/create-product.dto';
 import { buildFileUrl } from 'src/helper/urlBuilder';
+import { ActivityQuery } from './dto/activityQuery.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
   // create product (UPDATED)
-  async create(
-    createProductDto: CreateProductDTO,
-    imges: Express.Multer.File[],
-    tutorialVideo: Express.Multer.File | null,
-  ) {
-    try {
-      const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];
+// Assuming buildFileUrl is a helper function and CreateProductDTO is imported
 
-      const tutorialVideoUrl = tutorialVideo
-        ? buildFileUrl(tutorialVideo.filename)
-        : createProductDto.tutorial || null;
+async create(
+  createProductDto: CreateProductDTO,
+  imges: Express.Multer.File[],
+  tutorialVideo: Express.Multer.File | null,
+) {
+  try {
+    // 1. Prepare file URLs
+    // This correctly uses the uploaded files, ignoring the (now optional) DTO.imges field.
+    const imagePaths = imges?.map((file) => buildFileUrl(file.filename)) || [];
 
-      const discouted_price = createProductDto.price * 0.8;
+    const tutorialVideoUrl = tutorialVideo
+      ? buildFileUrl(tutorialVideo.filename)
+      : createProductDto.tutorial || null;
 
-      const res = await this.prisma.product.create({
-        data: {
-          title: createProductDto.title,
-          description: createProductDto.description,
-          product_type: createProductDto.product_type as any,
-          up_to_kids: createProductDto.up_to_kids,
-          age_range: createProductDto.age_range,
-          price: createProductDto.price,
-          theme: createProductDto.theme,
-          included: createProductDto.included,
-          tutorial: tutorialVideoUrl, 
-          discounted_price: discouted_price,
-          imges: imagePaths,
-          avg_rating: 0,
-          total_review: 0,
-          activities: {
-            create: createProductDto.activities.map((a) => ({
-              title: a.title,
-              description: a.description,
-            })),
-          },
+    // 2. Calculate discounted price
+    const discouted_price = createProductDto.price * 0.8;
+
+    // 3. Create Product record
+    const res = await this.prisma.product.create({
+      data: {
+        title: createProductDto.title,
+        description: createProductDto.description,
+        
+        product_type: createProductDto.product_type as any,
+        up_to_kids: createProductDto.up_to_kids,
+        age_range: createProductDto.age_range,
+        price: createProductDto.price,
+        theme: createProductDto.theme as any,
+        category: createProductDto.category as any, 
+        
+        included: createProductDto.included,
+        tutorial: tutorialVideoUrl,
+        discounted_price: discouted_price,
+        
+        imges: imagePaths, 
+        
+        avg_rating: 0,
+        total_review: 0,
+        activities: {
+          create: createProductDto.activities.map((a) => ({
+            title: a.title,
+            description: a.description,
+          })),
         },
-        include: { activities: true },
-      });
-      return res;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
+      },
+      include: { activities: true },
+    });
+    return res;
+  } catch (err) {
+    console.log('Error in product creation service:', err);
+    // You should re-throw the error so the controller can catch and handle the HTTP response.
+    throw err;
   }
+}
 
   async findAll(filterDto: ProductFilterDto = {}) {
     const { search, age_range, theme } = filterDto;
@@ -169,23 +182,50 @@ export class ProductsService {
     }
   }
 
-  // Delete product (NO CHANGE)
-// Delete product safely
-async remove(id: string) {
-  const product = await this.prisma.product.findUnique({ where: { id } });
-  if (!product) {
-    throw new NotFoundException(`Product with ID ${id} not found`);
+  // Delete product safely
+  async remove(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    return this.prisma.$transaction(async (prisma) => {
+      // Delete dependent records first
+      await prisma.activity.deleteMany({ where: { productId: id } });
+      await prisma.orderItem.deleteMany({ where: { productId: id } });
+      await prisma.favorite.deleteMany({ where: { product_id: id } });
+
+      // Now safely delete the product
+      return prisma.product.delete({ where: { id } });
+    });
   }
 
-  return this.prisma.$transaction(async (prisma) => {
-    // Delete dependent records first
-    await prisma.activity.deleteMany({ where: { productId: id } });
-    await prisma.orderItem.deleteMany({ where: { productId: id } }); // 👈 NEW LINE
-    await prisma.favorite.deleteMany({ where: { product_id: id } });  // 👈 optional, if exists
+  async create_activity(activity: any, file: any) {
+    const videoUrl = buildFileUrl(file.filename);
+    const res = await this.prisma.dIY_activity.create({
+      data: {
+        ...activity,
+        video: videoUrl
+      }
+    });
+    return res;
+  }
 
-    // Now safely delete the product
-    return prisma.product.delete({ where: { id } });
-  });
-}
+  async get_all_activity(filterDto: ActivityQuery) {
+    const { search } = filterDto;
+    const searchCondition: any = {};
+    if (search) {
+      searchCondition.OR = [
+        { title: { contains: search, mode: 'insensitive' as const } },
+        { description: { contains: search, mode: 'insensitive' as const } },
+      ];
+    }
+   
+    return this.prisma.dIY_activity.findMany({
+      where: {
+        ...searchCondition
+      }
+    });
+  }
 
 }

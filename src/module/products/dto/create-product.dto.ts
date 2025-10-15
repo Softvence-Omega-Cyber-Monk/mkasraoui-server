@@ -6,10 +6,12 @@ import {
   ValidateNested,
   IsNumber,
   IsOptional,
+  IsEnum, // <-- Added for Theme and Category Enums
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ProductType, Theme } from '@prisma/client';
+// 💡 UPDATED IMPORT: Include the new 'Category' enum
+import { ProductType, Theme, DIY_Category } from '@prisma/client'; 
 
 export class CreateActivityDTO {
   @ApiProperty({
@@ -30,13 +32,13 @@ export class CreateActivityDTO {
 
 // Main DTO for Product creation
 export class CreateProductDTO {
-  @ApiProperty({
+   @ApiProperty({
     description: 'The title of the product.',
     example: 'Building Blocks',
   })
   @IsString()
-  @IsNotEmpty()
-  title: string;
+  @IsNotEmpty() // <-- This ensures it's not empty
+  title: string; // <-- THIS FIELD MUST BE PRESENT
 
   @ApiProperty({
     description: 'A detailed description of the product.',
@@ -44,13 +46,22 @@ export class CreateProductDTO {
   })
   @IsString()
   description: string;
-
   @ApiProperty({
-    description: 'The type or category of the product.',
-    example: 'DIY_BOX',
+    description: 'The title of the product.',
+    example: 'Building Blocks',
+    enum: ProductType,
   })
-  @IsString()
-  product_type:ProductType;
+  @IsEnum(ProductType)
+  product_type: ProductType;
+  
+  @ApiProperty({
+    description: 'The category for the product, used for menu organization.',
+    example: 'DIY_BOX',
+    enum: DIY_Category,
+  })
+  @IsEnum(DIY_Category)
+  @IsOptional() 
+  category?: DIY_Category = DIY_Category.DIY_BOX 
 
   @ApiProperty({
     description: 'The maximum number of kids that can use the product.',
@@ -58,6 +69,7 @@ export class CreateProductDTO {
   })
   @IsNumber()
   @IsOptional()
+  @Type(() => Number)
   up_to_kids?: number;
   
   @ApiProperty({
@@ -66,16 +78,19 @@ export class CreateProductDTO {
   })
   @IsString()
   age_range: string;
+  
   @ApiProperty({
     description: 'The theme of the product.',
     example: 'SUPERHERO',
+    enum: Theme,
   })
-  @IsString()
+  @IsEnum(Theme)
   @IsOptional()
-  theme:Theme
+  theme: Theme;
 
   @ApiProperty({ description: 'The price of the product.', example: 25.99 })
   @IsNumber()
+  @Type(() => Number)
   price: number;
 
   @ApiProperty({
@@ -95,16 +110,7 @@ export class CreateProductDTO {
   @IsString()
   @IsOptional()
   tutorial?: string;
-  
-  
-  @ApiProperty({
-    description: 'URLs of the product images.',
-    isArray: true,
-    example: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg'],
-  })
-  @IsArray()
-  @IsString({ each: true })
-  imges: string[];
+
 
   @ApiProperty({
     description: 'A list of activities associated with the product.',
@@ -127,8 +133,58 @@ export class ProductFilterDto {
   @IsString()
   age_range?: string;
 
-  @ApiPropertyOptional({ description: 'Filter products by theme (e.g., "SCIENCE").' })
+  @ApiPropertyOptional({ 
+    description: 'Filter products by theme (e.g., "SCIENCE").',
+    enum: Theme,
+  })
   @IsOptional()
-  @IsString()
-  theme?: string;
+  @IsEnum(Theme)
+  theme?: Theme;
+
+  @ApiPropertyOptional({ 
+    description: 'Filter products by menu category (e.g., "BIRTHDAY_DECORATIONS").',
+    enum: DIY_Category,
+  })
+  @IsOptional()
+  @IsEnum(DIY_Category)
+  category?: DIY_Category;
+}
+
+
+export class CreateProductMultipartDto {
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    isArray: true,
+    description: 'The image files for the product (up to 10).',
+  })
+  files: any[];
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'The tutorial video file for the product.',
+    required: false,
+  })
+  tutorialVideo?: any;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'The product data as a JSON string.',
+    example: JSON.stringify({
+      title: 'Building Blocks',
+      description: 'A set of colorful blocks...',
+      product_type: 'DIY_BOX',
+      theme: 'SUPERHERO',
+      // 💡 FIX: Use the string literal 'BIRTHDAY_DECORATIONS' instead of the enum variable
+      category: 'BIRTHDAY_DECORATIONS', 
+      age_range: '3-6 years',
+      price: 25.99,
+      included: ['50 pieces', 'instruction manual'],
+      activities: [
+        { title: 'Build a Tower', description: 'Use the blocks to build a tall tower.' },
+      ],
+    }),
+  })
+  data: string;
 }
