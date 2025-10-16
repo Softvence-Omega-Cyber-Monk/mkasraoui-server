@@ -62,7 +62,7 @@ export class MailTemplatesService {
 
                     <tr>
                         <td align="center" style="padding: 20px; font-size: 12px; color: #aaaaaa; background-color: #f9f9f9; border-top: 1px solid #e0e0e0;">
-                            © 2024 Your Company. All rights reserved.
+                            © 2024 MA FATE FACILE. All rights reserved.
                         </td>
                     </tr>
                 </table>
@@ -114,7 +114,8 @@ export class MailTemplatesService {
 
         <p>We’re thrilled to celebrate this moment with you!</p>
       </div>
-      <div class="footer">© 2025 Your Company. All rights reserved.</div>
+      <div class="footer">© 2025 MA FATE FACILE
+. All rights reserved.</div>
     </div>
   </div>
 </body>
