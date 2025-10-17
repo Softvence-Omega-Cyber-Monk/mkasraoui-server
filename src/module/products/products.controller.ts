@@ -12,7 +12,6 @@ import {
   HttpStatus,
   HttpException,
   Query,
-  UploadedFile,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ProductsService } from './products.service';
@@ -20,7 +19,6 @@ import { CreateProductDTO, CreateProductMultipartDto, ProductFilterDto } from '.
 import { UpdateProductDto } from './dto/update-product.dto';
 import {
   FileFieldsInterceptor,
-  FileInterceptor,
 } from '@nestjs/platform-express';
 import {
   ApiBody,
@@ -37,9 +35,9 @@ import { Role } from '@prisma/client';
 import sendResponse from 'src/module/utils/sendResponse';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
-import { CreateDiyActivityMultipartDto } from './dto/createDiyActivity.dto';
 import { ActivityQuery } from './dto/activityQuery.dto';
 import { UpdateActivityMultipartDto } from './dto/updatedActivity.dto';
+
 const fileStorageOptions = {
   storage: diskStorage({
     destination: './uploads',
@@ -60,48 +58,138 @@ export class ProductsController {
 
 
   // ---------------------------------------------------------------------activity----------------------------------------------------
+
+
+
+
+@Post('create-activity')
+@Public()
+@UseInterceptors(
+    // Use FileFieldsInterceptor for multiple file fields
+    FileFieldsInterceptor([
+        { name: 'video', maxCount: 1 },
+        { name: 'pdfFile', maxCount: 1 }, // NEW
+    ], {
+        ...fileStorageOptions,
+        limits: { fileSize: 50 * 1024 * 1024 } 
+    })
+)
+@ApiOperation({ summary: 'Create a new DIY activity with optional video and PDF uploads' }) // Updated summary
+@ApiConsumes('multipart/form-data') 
+@ApiBody({
+    description: 'Data for the new DIY activity, including optional video and PDF files.',
+    type: 'multipart/form-data' as any,
+    schema: {
+        type: 'object',
+        properties: {
+            title: { type: 'string', nullable: true },
+            description: { type: 'string', nullable: true },
+            instruction_sheet: { type: 'string', nullable: true },
+            material: { type: 'string', nullable: true }, // ADDED
+            video: {
+                type: 'string',
+                format: 'binary',
+                description: 'The video file for the DIY activity (max 10MB).'
+            },
+            pdfFile: { // NEW
+                type: 'string',
+                format: 'binary',
+                description: 'The instruction PDF file for the DIY activity (max 10MB).'
+            },
+        },
+        required: ['title'] 
+    },
+})
+async create_activity(
+    @Body() body: any,
+    // Use @UploadedFiles() instead of @UploadedFile()
+    @UploadedFiles() files: { video?: Express.Multer.File[], pdfFile?: Express.Multer.File[] },
+) {
+    try {
+        const videoFile = files.video ? files.video[0] : undefined;
+        const pdfFile = files.pdfFile ? files.pdfFile[0] : undefined; // NEW
+        
+        // Pass both files to the service
+        const res = await this.productsService.create_activity(body, videoFile, pdfFile); 
+        return res;
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
 @Patch('update-activity/:id')
 @Public()
 @UseInterceptors(
-  FileInterceptor('video', {
-    ...fileStorageOptions,
-    limits: { fileSize: 10 * 1024 * 1024 } 
-  })
+    // Use FileFieldsInterceptor for multiple file fields
+    FileFieldsInterceptor([
+        { name: 'video', maxCount: 1 },
+        { name: 'pdfFile', maxCount: 1 }, // NEW
+    ], {
+        ...fileStorageOptions,
+        limits: { fileSize: 10 * 1024 * 1024 } 
+    })
 )
-@ApiOperation({ summary: 'update a new DIY activity with an optional video upload' })
+@ApiOperation({ summary: 'Update a DIY activity with optional video and PDF file replacement' }) // Updated summary
 @ApiConsumes('multipart/form-data') 
+// Assuming UpdateActivityMultipartDto includes 'material' and 'pdfFile' in its schema
 @ApiBody({
-  description: 'Updated data for the DIY activity, including an optional replacement video file.',
-  type: UpdateActivityMultipartDto,
+    description: 'Updated data for the DIY activity, including an optional replacement video or PDF file.',
+    type: UpdateActivityMultipartDto, 
 })
 async update_activity(
-  @Body() body: any,
-  @UploadedFile() videoFile: Express.Multer.File,
-  @Param('id') id:string
+    @Body() body: any,
+    // Use @UploadedFiles() instead of @UploadedFile()
+    @UploadedFiles() files: { video?: Express.Multer.File[], pdfFile?: Express.Multer.File[] },
+    @Param('id') id: string
 ) {
-  try {
-    const res=await this.productsService.update_activity(body, videoFile,id);
-    return {
-      message:"Activity updated successfull",
-      data:res
+    try {
+        const videoFile = files.video ? files.video[0] : undefined;
+        const pdfFile = files.pdfFile ? files.pdfFile[0] : undefined; // NEW
+
+        // Pass both files to the service
+        const res = await this.productsService.update_activity(body, videoFile, pdfFile, id); 
+        
+        return {
+            message: "Activity updated successfully",
+            data: res
+        }
+    } catch (err) {
+        console.log(err);
+        throw err;
     }
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
 }
 
 
-  @Public()
+@Public()
 @Get("activity")
 async getAll(@Query()filterDto:ActivityQuery){
   return this.productsService.get_all_activity(filterDto)
 }
 
+  @Get(':id/activity')
+  @Public()
+  async getSingleActivity(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const data = await this.productsService.findOneActivity(id);
+      return sendResponse(res, {
+        statusCode: HttpStatus.OK,
+        success: true,
+        message: 'Data retrieved successfully',
+        data: data,
+      });
+    } catch (err) {
+      return sendResponse(res, {
+        statusCode: HttpStatus.BAD_REQUEST,
+        success: false,
+        message: err.message || 'Failed to retrieve data',
+        data: null,
+      });
+    }
+  }
 
 
-
-@Delete('delet-activity/:id')
+@Delete('delete-activity/:id')
 @Public()
 async deleteActivity(@Param('id') id:string){
   const res=await this.productsService.delete_activity(id)
@@ -117,7 +205,7 @@ async deleteActivity(@Param('id') id:string){
   // --------------------------------------------------------------------------
   //                 CREATE PRODUCT ROUTE (UPDATED)
   // --------------------------------------------------------------------------
- @Post()
+@Post()
 @ApiConsumes('multipart/form-data')
 @ApiOperation({ summary: 'Create a new product with activities, images, and an optional tutorial video.' })
 @ApiBody({
@@ -347,55 +435,6 @@ async createProduct(
       });
     }
   }
-
-
-
-
-@Post('create-activity')
-@Public()
-@UseInterceptors(
-  FileInterceptor('video', {
-    ...fileStorageOptions,
-    limits: { fileSize: 10 * 1024 * 1024 } 
-  })
-)
-@ApiOperation({ summary: 'Create a new DIY activity with an optional video upload' })
-@ApiConsumes('multipart/form-data') 
-@ApiBody({
-  description: 'Data for the new DIY activity, including an optional video file.',
-  type: 'multipart/form-data' as any,
-  schema: {
-    type: 'object',
-    properties: {
-      title: { type: 'string', nullable: true },
-      description: { type: 'string', nullable: true },
-      instruction_sheet: { type: 'string', nullable: true },
-      video: {
-        type: 'string',
-        format: 'binary',
-        description: 'The video file for the DIY activity (max 10MB).'
-      },
-    },
-    required: ['title'] 
-  },
-})
-async create_activity(
-  @Body() body: any,
-  @UploadedFile() videoFile: Express.Multer.File,
-) {
-  try {
-    let savedFilePath: string | null = null;
-    if (videoFile) {
-      savedFilePath = `/uploads/${videoFile.filename}`; 
-      body.video = savedFilePath;
-    }
-    const res=await this.productsService.create_activity(body, videoFile);
-    return res;
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-}
 
 
 

@@ -44,10 +44,16 @@ model DIY_activity {
   title String?
   description String?
   video String?
+  pdfFile  String?
+  material  String?
   instruction_sheet String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  total_review Int @default(0)
+  avg_rating Float @default(0)
+  activityReview ActivityReview[]
 }
+
 enum DIY_Category {
   DIY_BOX
   BIRTHDAY_DECORATIONS
