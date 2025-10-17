@@ -199,16 +199,23 @@ async create(
     });
   }
 
-  async create_activity(activity: any, file: any) {
-    const videoUrl = buildFileUrl(file.filename);
+
+
+  async create_activity(activity: any, videoFile: any, pdfFile: any) { // ADD pdfFile
+    const videoUrl = videoFile ? buildFileUrl(videoFile.filename) : undefined;
+    const pdfUrl = pdfFile ? buildFileUrl(pdfFile.filename) : undefined; // NEW
+    
+    // The 'activity' object already contains 'material' from the body
     const res = await this.prisma.dIY_activity.create({
-      data: {
-        ...activity,
-        video: videoUrl
-      }
+        data: {
+            ...activity,
+            video: videoUrl,
+            pdfFile: pdfUrl, // NEW
+            // 'material' is spread in from '...activity'
+        }
     });
     return res;
-  }
+}
 
   async get_all_activity(filterDto: ActivityQuery) {
     const { search } = filterDto;
@@ -240,30 +247,46 @@ async create(
 
 
 
-  // Inside ProductsService
-// ...
 
-async update_activity(activity: any, file: any, id: string) {
+
+
+async update_activity(activity: any, videoFile: any, pdfFile: any, id: string) { // ADD pdfFile
     let videoUrl: any = undefined;
-    
+    let pdfUrl: any = undefined; // NEW
+
     // 1. Determine the video URL
-    if (file) {
-      // New file uploaded
-      videoUrl = buildFileUrl(file.filename);
+    if (videoFile) {
+        // New video file uploaded
+        videoUrl = buildFileUrl(videoFile.filename);
     } else if (activity.video === null) {
-      // Client explicitly sent 'video: null' to clear it
-      videoUrl = null; 
+        // Client explicitly sent 'video: null' to clear it
+        videoUrl = null;
     }
+    
+    // 2. Determine the PDF URL (NEW LOGIC)
+    if (pdfFile) {
+        // New PDF file uploaded
+        pdfUrl = buildFileUrl(pdfFile.filename);
+    } else if (activity.pdfFile === null) {
+        // Client explicitly sent 'pdfFile: null' to clear it
+        pdfUrl = null;
+    }
+
     const updateData: any = {
         title: activity.title,
         description: activity.description,
         instruction_sheet: activity.instruction_sheet,
-    
-        ...(videoUrl !== undefined ? { video: videoUrl } : {}),
+        material: activity.material, // ADDED
+        
+        // Only include the video field if it was updated or explicitly cleared
+        ...(videoUrl !== undefined ? { video: videoUrl } : {}), 
+        
+        // Only include the pdfFile field if it was updated or explicitly cleared (NEW)
+        ...(pdfUrl !== undefined ? { pdfFile: pdfUrl } : {}), 
     };
 
     try {
-        // 2. Use update for a single record. Prisma throws NotFoundError if 'id' not found.
+        // 3. Use update for a single record.
         const res = await this.prisma.dIY_activity.update({
             where: {
                 id: id
@@ -272,12 +295,14 @@ async update_activity(activity: any, file: any, id: string) {
         });
         return res;
     } catch (err) {
-        // Handle the case where the record ID doesn't exist 
-        // (Prisma will throw PrismaClientKnownRequestError with code P2025 or similar)
+        // Handle the case where the record ID doesn't exist
         if (err.code === 'P2025') {
             throw new NotFoundException(`DIY Activity with ID ${id} not found.`);
         }
         throw err;
     }
 }
+
+
+
 }

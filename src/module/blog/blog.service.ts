@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateBlogDto } from './dto/update-blog.dto';
 import { buildFileUrl } from 'src/helper/urlBuilder';
 import { PrismaService } from 'src/prisma/prisma.service';
 
