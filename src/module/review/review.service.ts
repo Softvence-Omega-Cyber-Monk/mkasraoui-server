@@ -35,30 +35,35 @@ async create(createReviewDto: CreateReviewDto, userId: string) {
     });
   }
 
-  // async findAll() {
-  //   return this.prisma.productReview.findMany({
-  //     include: {
-  //       user: true,
-  //       product: true,
-  //     },
-  //   });
-  // }
+async createActivityReviews(createReviewDto: CreateReviewDto, userId: string) {
+    return this.prisma.$transaction(async (prisma) => {
+      const newReview = await prisma.activityReview.create({
+        data: {
+          rating: createReviewDto.rating,
+          description: createReviewDto.description,
+          activityId: createReviewDto.productId,
+          userId: userId,
+        },
+      });
 
-  // async findOne(id: string) {
-  //   const review = await this.prisma.productReview.findUnique({
-  //     where: { id },
-  //     include: {
-  //       user: true,
-  //       product: true,
-  //     },
-  //   });
+      const { productId } = createReviewDto;
+      const activityReviews = await prisma.activityReview.findMany({
+        where: { activityId:productId },
+      });
+      const totalRating = activityReviews.reduce((sum, review) => sum + review.rating, 0);
+      const newAverage = totalRating / activityReviews.length;
+      await prisma.dIY_activity.update({
+        where: { id: productId },
+        data: {
+        avg_rating: newAverage,
+        total_review:{increment:1}
+        },
+      });
+      return newReview;
+    });
+  }
 
-  //   if (!review) {
-  //     throw new NotFoundException(`Review with ID ${id} not found`);
-  //   }
-
-  //   return review;
-  // }
+  
 
   async update(id: string, updateReviewDto: UpdateReviewDto, userId: string) {
     const existingReview = await this.prisma.productReview.findUnique({
@@ -85,12 +90,28 @@ async create(createReviewDto: CreateReviewDto, userId: string) {
     });
 
     if (!existingReview) {
-      throw new NotFoundException(`Review with ID ${id} not found`);
+      throw new NotFoundException(`Review with ID ${id} not found `);
     }
     if (existingReview.userId !== userId) {
       throw new UnauthorizedException('You can only delete your own reviews.');
     }
     return this.prisma.productReview.delete({
+      where: { id },
+    });
+  }
+
+  async removeActivityReview(id: string, userId: string) {
+    const existingReview = await this.prisma.activityReview.findUnique({
+      where: { id },
+    });
+
+    if (!existingReview) {
+      throw new NotFoundException(`Review with ID ${id} not found`);
+    }
+    if (existingReview.userId !== userId) {
+      throw new UnauthorizedException('You can only delete your own reviews.');
+    }
+    return this.prisma.activityReview.delete({
       where: { id },
     });
   }

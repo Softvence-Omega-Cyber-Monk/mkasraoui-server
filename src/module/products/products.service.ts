@@ -201,6 +201,9 @@ async create(
 
 
 
+
+// DIY Activity 
+
   async create_activity(activity: any, videoFile: any, pdfFile: any) { // ADD pdfFile
     const videoUrl = videoFile ? buildFileUrl(videoFile.filename) : undefined;
     const pdfUrl = pdfFile ? buildFileUrl(pdfFile.filename) : undefined; // NEW
@@ -234,7 +237,20 @@ async create(
     });
   }
 
+  // Get product by Id
+  async findOneActivity(id: string) {
+    const product = await this.prisma.dIY_activity.findUnique({
+      where: { id },
+      include: { 
+         activityReview: true },
+    });
 
+    if (!product) {
+      throw new NotFoundException(`Activities with ID ${id} not found`);
+    }
+
+    return product;
+  }
 
   async delete_activity(id:string){
     const res=await this.prisma.dIY_activity.delete({
