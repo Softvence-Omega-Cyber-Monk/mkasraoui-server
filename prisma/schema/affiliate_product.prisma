@@ -1,0 +1,11 @@
+model AffiliatedProduct {
+  id           String   @id @default(uuid())
+  title        String
+  price        Float
+  avg_rating   Float    @default(0.0)
+  total_review Int      @default(0)
+  image_url    String?
+  link         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

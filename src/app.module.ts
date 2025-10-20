@@ -35,6 +35,7 @@ import { PartGenerationModule } from './module/part-generation/part-generation.m
 import { BullModule } from '@nestjs/bull';
 import { ProviderPaymentModule } from './module/provider-payment/provider-payment.module';
 import { AmazonServiceModule } from './module/amazon-service/amazon-service.module';
+import { AffiliatedProductModule } from './module/affiliated-product/affiliated-product.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { AmazonServiceModule } from './module/amazon-service/amazon-service.modu
     PartGenerationModule,
     ProviderPaymentModule,
     AmazonServiceModule,
+    AffiliatedProductModule,
     // PaymentModule
   ],
   controllers: [AppController],
