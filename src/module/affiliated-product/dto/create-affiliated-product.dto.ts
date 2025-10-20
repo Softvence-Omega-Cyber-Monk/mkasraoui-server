@@ -39,6 +39,15 @@ export class CreateAffiliatedProductDto {
   })
   imageUrl?: string;
 
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    example: 'Amazon',
+    description: 'Affiliated Company name (optional)',
+    required: false,
+  })
+  affiliatedCompany?: string;
+
   @IsNotEmpty()
   @IsString()
   @IsUrl()

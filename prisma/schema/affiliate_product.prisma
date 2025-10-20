@@ -6,6 +6,7 @@ model AffiliatedProduct {
   total_review Int      @default(0)
   image_url    String?
   link         String
+  affiliated_company String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
