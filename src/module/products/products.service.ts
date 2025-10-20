@@ -252,13 +252,21 @@ async create(
     return product;
   }
 
+
   async delete_activity(id:string){
-    const res=await this.prisma.dIY_activity.delete({
-      where:{
-        id
-      }
-    })
-    return res;
+    const product = await this.prisma.dIY_activity.findUnique(
+      { where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Activity with ID ${id} not found`);
+    }
+
+    return this.prisma.$transaction(async (prisma) => {
+      // Delete dependent records first
+      await prisma.activityReview.deleteMany({ where: { activityId: id } });
+
+      // Now safely delete the product
+      return prisma.dIY_activity.delete({ where: { id } });
+    });
   }
 
 
