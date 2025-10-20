@@ -63,7 +63,7 @@ export class ProductsController {
 
 
 @Post('create-activity')
-@Public()
+@Roles(Role.ADMIN)
 @UseInterceptors(
     // Use FileFieldsInterceptor for multiple file fields
     FileFieldsInterceptor([
@@ -119,7 +119,7 @@ async create_activity(
 }
 
 @Patch('update-activity/:id')
-@Public()
+@Roles(Role.ADMIN)
 @UseInterceptors(
     // Use FileFieldsInterceptor for multiple file fields
     FileFieldsInterceptor([
@@ -190,7 +190,7 @@ async getAll(@Query()filterDto:ActivityQuery){
 
 
 @Delete('delete-activity/:id')
-@Public()
+@Roles(Role.ADMIN)
 async deleteActivity(@Param('id') id:string){
   const res=await this.productsService.delete_activity(id)
   return{
