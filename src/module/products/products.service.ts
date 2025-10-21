@@ -193,6 +193,8 @@ async create(
       await prisma.activity.deleteMany({ where: { productId: id } });
       await prisma.orderItem.deleteMany({ where: { productId: id } });
       await prisma.favorite.deleteMany({ where: { product_id: id } });
+      await prisma.productReview.deleteMany({where: { productId: id }})
+
 
       // Now safely delete the product
       return prisma.product.delete({ where: { id } });
